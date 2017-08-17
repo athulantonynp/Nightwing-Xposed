@@ -14,14 +14,10 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
  * Created by athul on 17/8/17.
  */
 
-public class Tets implements IXposedHookLoadPackage,IXposedHookZygoteInit,IXposedHookInitPackageResources {
+public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResources ,IXposedHookLoadPackage{
 
     private static String MODULE_PATH = null;
-    @Override
-    public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
-        XposedBridge.log("Loaded app: " + loadPackageParam.packageName);
 
-    }
 
     @Override
     public void initZygote(StartupParam startupParam) throws Throwable {
@@ -30,10 +26,16 @@ public class Tets implements IXposedHookLoadPackage,IXposedHookZygoteInit,IXpose
 
     }
 
-
     @Override
     public void handleInitPackageResources(XC_InitPackageResources.InitPackageResourcesParam initPackageResourcesParam) throws Throwable {
         XModuleResources modRes = XModuleResources.createInstance(MODULE_PATH, initPackageResourcesParam.res);
+
+
         Utils.changeDrawerIcon(initPackageResourcesParam,modRes);
+    }
+
+    @Override
+    public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
+        
     }
 }
