@@ -3,6 +3,7 @@ package com.athul.nightwing.module;
 import android.app.Activity;
 import android.content.res.XModuleResources;
 import android.preference.PreferenceActivity;
+import android.util.Log;
 
 import com.athul.nightwing.R;
 
@@ -49,12 +50,13 @@ public class Utils {
     }
 
     public static void removeFieldsFromSettings(final XC_LoadPackage.LoadPackageParam loadPackageParam, ClassLoader classLoader) {
-
+        Log.e("FOUND","METHOD_ATHUL");
         XposedHelpers.findAndHookMethod("com.android.settings.Settings", loadPackageParam.classLoader, "insertAccountsHeaders", List.class, int.class,
                 new XC_MethodReplacement() {
                     @Override
                     protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws Throwable {
                         XposedBridge.log("method replacement ran!");
+                        Log.e("FOUND","METHOD_TWEAK");
                         PreferenceActivity activity = (PreferenceActivity) methodHookParam.thisObject;
                         List<PreferenceActivity.Header> headers = (List<PreferenceActivity.Header>) methodHookParam.args[0];
                         int accountButton = findHeaderIndex(activity, headers, "account_add");
