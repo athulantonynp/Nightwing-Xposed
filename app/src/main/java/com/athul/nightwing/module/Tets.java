@@ -41,6 +41,7 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
         if (loadPackageParam.packageName.equals("com.android.settings")){
             Utils.removeFieldsFromSettings(loadPackageParam,loadPackageParam.classLoader);
 
+
         }
 
     }

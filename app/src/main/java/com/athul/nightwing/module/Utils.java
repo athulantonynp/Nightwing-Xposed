@@ -2,16 +2,20 @@ package com.athul.nightwing.module;
 
 import android.app.Activity;
 import android.content.res.XModuleResources;
+import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.util.Log;
 
+import com.android.settings.dashboard.DashboardCategory;
 import com.athul.nightwing.R;
+import com.athul.nightwing.beans.CustomObject;
+
+
+import com.google.gson.Gson;
 
 import java.util.List;
 
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XC_MethodReplacement;
-import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
@@ -50,22 +54,37 @@ public class Utils {
     }
 
     public static void removeFieldsFromSettings(final XC_LoadPackage.LoadPackageParam loadPackageParam, ClassLoader classLoader) {
-        Log.e("FOUND","METHOD_ATHUL");
-        XposedHelpers.findAndHookMethod("com.android.settings.Settings", loadPackageParam.classLoader, "insertAccountsHeaders", List.class, int.class,
-                new XC_MethodReplacement() {
-                    @Override
-                    protected Object replaceHookedMethod(MethodHookParam methodHookParam) throws Throwable {
-                        XposedBridge.log("method replacement ran!");
-                        Log.e("FOUND","METHOD_TWEAK");
-                        PreferenceActivity activity = (PreferenceActivity) methodHookParam.thisObject;
-                        List<PreferenceActivity.Header> headers = (List<PreferenceActivity.Header>) methodHookParam.args[0];
-                        int accountButton = findHeaderIndex(activity, headers, "account_add");
-                        headers.remove(accountButton-1);
-                        int accountHead = findHeaderIndex(activity, headers, "account_settings");
-                        headers.remove(accountHead-1);
-                        return methodHookParam.args[1];
-                    }
-                });
+       /* XposedHelpers.findAndHookMethod("com.android.settings.SettingsActivity", loadPackageParam.classLoader, "loadCategoriesFromResource",  int.class,List.class,
+                }); */
+
+       XposedHelpers.findAndHookMethod("com.android.settings.SettingsActivity", loadPackageParam.classLoader, "onCreate",Bundle.class,
+               new XC_MethodHook() {
+                   @Override
+                   protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                       Log.e("FINISH","FOUND METHOD");
+                       Activity act = (Activity)param.thisObject;
+                       act.finish();
+                       Log.e("FINISH","YOU ARE NOT ALLOWED");
+                   }
+
+                   @Override
+                   protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+
+                       Gson gson=new Gson();
+                      /* for(Object object: (List<DashboardCategory>)param.args[0]){
+
+                           Log.e("HELL",gson.toJson(object).toString());
+                           Log.e("CATE", ((DashboardCategory) object).getTile(0).fragment);
+                       } */
+
+                   }
+               }
+
+
+
+       );
+
+
     }
 
     public static int findHeaderIndex(Activity activity, List<PreferenceActivity.Header> headers, String headerName) {
