@@ -1,21 +1,33 @@
 package com.athul.nightwing.module;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AndroidAppHelper;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentSender;
 import android.content.res.XModuleResources;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.android.settings.dashboard.DashboardCategory;
 import com.athul.nightwing.R;
+import com.athul.nightwing.activities.ProhibitiedActivity;
 import com.athul.nightwing.beans.CustomObject;
+
 
 
 import com.google.gson.Gson;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
@@ -87,22 +99,73 @@ public class Utils {
 
     }
 
-    public static int findHeaderIndex(Activity activity, List<PreferenceActivity.Header> headers, String headerName) {
-        int headerIndex = -1;
-        int resId = activity.getResources().getIdentifier(headerName, "id", activity.getPackageName());
-        if (resId != 0) {
-            int i = 0;
-            int size = headers.size();
-            while (i < size) {
-                PreferenceActivity.Header header = headers.get(i);
-                int id = (int) header.id;
-                if (id == resId) {
-                    headerIndex = i + 1;
-                    break;
-                }
-                i++;
-            }
-        }
-        return headerIndex;
+
+    public static void restrictAppUninstallation(final XC_LoadPackage.LoadPackageParam loadPackageParam) {
+
+       /* XposedHelpers.findAndHookMethod("android.content.pm.PackageInstaller", loadPackageParam.classLoader,
+                "uninstall", String.class, IntentSender.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            Log.e("OMKV","FOUND METHOD AND HOOKING");
+                        XposedBridge.log("FOUND METHOD");
+                        String packageName=(String)param.args[0];
+                        if(packageName.equals("me.entri.entrime")){
+                            Log.e("OMKV","PACKAGE FOUND");
+                            XposedBridge.log("FOUND METHOD");
+                            Activity act = (Activity)param.thisObject;
+                            act.finish();
+                            param.args[0]=null;
+                            return;
+                        }
+                    }
+                });  */
+
+       XposedHelpers.findAndHookMethod("com.android.packageinstaller.UninstallerActivity", loadPackageParam.classLoader,
+               "onCreate", Bundle.class, new XC_MethodHook() {
+
+                   @Override
+                   protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                       final Activity act = (Activity)param.thisObject;
+                       Uri packageURI = act.getIntent().getData();
+                       String packageName = packageURI.getEncodedSchemeSpecificPart();
+                       Log.e("OMKV",packageName);
+                       if(packageName.equals("me.entri.entrime")){
+                           Log.e("OMKV","INSIDE PACKAGE");
+
+                           try{
+                               Context context = (Context) AndroidAppHelper.currentApplication();
+                               Intent dialogIntent=new Intent();
+                               dialogIntent.setComponent(new ComponentName("com.athul.nightwing","com.athul.nightwing.activities.ProhibitiedActivity"));
+                               dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                               act.startActivity(dialogIntent);
+                               act.finish();
+                           }catch (Exception e){
+                               Log.e("OMKV",e.getMessage());
+                           }
+                           act.finish();
+
+                         /* try {
+                              Log.e("OMKV","BUILDING CLASS");
+                              AlertDialog.Builder builder= new AlertDialog.Builder(context.getApplicationContext());
+                              builder.setTitle("#OMKV");
+                              builder.setMessage("Not allowed");
+                              builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                  @Override
+                                  public void onClick(DialogInterface dialog, int which) {
+                                      dialog.dismiss();
+                                  }
+                              }).show();
+                              act.finish();
+                          }
+                          catch (Exception e){
+                              Log.e("OMKV",e.toString());
+                          }*/
+                       }
+                   }
+
+               });
+
+
+
     }
 }

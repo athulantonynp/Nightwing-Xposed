@@ -24,25 +24,50 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
     private static String MODULE_PATH = null;
 
     private static String packages="null";
-    @Override
-    public void initZygote(StartupParam startupParam) throws Throwable {
-        MODULE_PATH = startupParam.modulePath;
-    }
 
     @Override
     public void handleInitPackageResources(XC_InitPackageResources.InitPackageResourcesParam initPackageResourcesParam) throws Throwable {
         XModuleResources modRes = XModuleResources.createInstance(MODULE_PATH, initPackageResourcesParam.res);
         Utils.changeDrawerIcon(initPackageResourcesParam,modRes);
+
     }
 
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
 
-        if (loadPackageParam.packageName.equals("com.android.settings")){
+       /* if (loadPackageParam.packageName.equals("com.android.settings")){
             Utils.removeFieldsFromSettings(loadPackageParam,loadPackageParam.classLoader);
-
-
         }
 
+
+
+        if(loadPackageParam.packageName.equals("android.content.pm")){
+            Log.e("OMKV","PACKAGE");
+            XposedBridge.log("FOUND METHOD");
+            for(int i=0;i<1000;i++){
+                Log.e("OMKV","PACKAGE");
+            }
+            Utils.restrictAppUninstallation(loadPackageParam);
+        } */
+
+       for(int i=0;i<50;i++){
+           Log.e("PACKAGE",loadPackageParam.packageName);
+       }
+
+        switch (loadPackageParam.packageName){
+            case "com.android.settings":
+                Utils.removeFieldsFromSettings(loadPackageParam,loadPackageParam.classLoader);
+                break;
+            case "com.android.packageinstaller":
+                Log.e("OMKV","FOUND APP");
+                Utils.restrictAppUninstallation(loadPackageParam);
+                break;
+        }
+
+    }
+
+    @Override
+    public void initZygote(StartupParam startupParam) throws Throwable {
+        MODULE_PATH=startupParam.modulePath;
     }
 }
