@@ -1,30 +1,34 @@
 package com.athul.nightwing.module;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.AndroidAppHelper;
+import android.app.DownloadManager;
 import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.XModuleResources;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
-import android.support.annotation.NonNull;
+
+import android.os.Parcel;
+import android.util.AttributeSet;
 import android.util.Log;
 
 import com.athul.nightwing.R;
-import com.athul.nightwing.activities.ProhibitiedActivity;
-import com.athul.nightwing.beans.CustomObject;
-
-
-
 import com.google.gson.Gson;
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
+import org.xmlpull.v1.XmlPullParser;
+
+import java.io.File;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -73,23 +77,10 @@ public class Utils {
                new XC_MethodHook() {
                    @Override
                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                       Log.e("FINISH","FOUND METHOD");
                        Activity act = (Activity)param.thisObject;
                        act.finish();
-                       Log.e("FINISH","YOU ARE NOT ALLOWED");
                    }
 
-                   @Override
-                   protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-
-                       Gson gson=new Gson();
-                      /* for(Object object: (List<DashboardCategory>)param.args[0]){
-
-                           Log.e("HELL",gson.toJson(object).toString());
-                           Log.e("CATE", ((DashboardCategory) object).getTile(0).fragment);
-                       } */
-
-                   }
                }
 
 
@@ -102,24 +93,6 @@ public class Utils {
 
     public static void restrictAppUninstallation(final XC_LoadPackage.LoadPackageParam loadPackageParam) {
 
-       /* XposedHelpers.findAndHookMethod("android.content.pm.PackageInstaller", loadPackageParam.classLoader,
-                "uninstall", String.class, IntentSender.class, new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                            Log.e("OMKV","FOUND METHOD AND HOOKING");
-                        XposedBridge.log("FOUND METHOD");
-                        String packageName=(String)param.args[0];
-                        if(packageName.equals("me.entri.entrime")){
-                            Log.e("OMKV","PACKAGE FOUND");
-                            XposedBridge.log("FOUND METHOD");
-                            Activity act = (Activity)param.thisObject;
-                            act.finish();
-                            param.args[0]=null;
-                            return;
-                        }
-                    }
-                });  */
-
        XposedHelpers.findAndHookMethod("com.android.packageinstaller.UninstallerActivity", loadPackageParam.classLoader,
                "onCreate", Bundle.class, new XC_MethodHook() {
 
@@ -128,9 +101,8 @@ public class Utils {
                        final Activity act = (Activity)param.thisObject;
                        Uri packageURI = act.getIntent().getData();
                        String packageName = packageURI.getEncodedSchemeSpecificPart();
-                       Log.e("OMKV",packageName);
-                       if(packageName.equals("me.entri.entrime")){
-                           Log.e("OMKV","INSIDE PACKAGE");
+
+                       if((Arrays.asList(Constants.restrictedApps).contains(packageName))){
 
                            try{
                                Context context = (Context) AndroidAppHelper.currentApplication();
@@ -140,31 +112,106 @@ public class Utils {
                                act.startActivity(dialogIntent);
                                act.finish();
                            }catch (Exception e){
-                               Log.e("OMKV",e.getMessage());
                            }
                            act.finish();
 
-                         /* try {
-                              Log.e("OMKV","BUILDING CLASS");
-                              AlertDialog.Builder builder= new AlertDialog.Builder(context.getApplicationContext());
-                              builder.setTitle("#OMKV");
-                              builder.setMessage("Not allowed");
-                              builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                  @Override
-                                  public void onClick(DialogInterface dialog, int which) {
-                                      dialog.dismiss();
-                                  }
-                              }).show();
-                              act.finish();
-                          }
-                          catch (Exception e){
-                              Log.e("OMKV",e.toString());
-                          }*/
                        }
                    }
 
                });
 
+        XposedHelpers.findAndHookMethod("com.android.packageinstaller.PackageInstallerActivity",
+                loadPackageParam.classLoader, "initiateInstall", new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+
+                        PackageInfo mPakcageInfoNew=(PackageInfo)XposedHelpers.getObjectField(param.thisObject,"mPkgInfo");
+                        final Activity act = (Activity)param.thisObject;
+                        if(!(Arrays.asList(Constants.restrictedApps).contains(mPakcageInfoNew.packageName))){
+
+                            try{
+                                Context context = (Context) AndroidAppHelper.currentApplication();
+                                Intent dialogIntent=new Intent();
+                                dialogIntent.setComponent(new ComponentName("com.athul.nightwing","com.athul.nightwing.activities.ProhibitiedActivity"));
+                                dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                act.startActivity(dialogIntent);
+                                act.finish();
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+                            act.finish();
+
+                        }
+                    }
+                });
+
+
+
+    }
+
+    public static void hookOnAppInstallation(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+
+        Class<?> traceClass=XposedHelpers.findClass("com.android.defcontainer.DefaultContainerService",loadPackageParam.classLoader);
+
+        XposedHelpers.findAndHookMethod(traceClass, "copyResourceInner", Uri.class, String.class,
+                String.class, String.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+
+
+                    }
+                });
+
+
+    }
+
+
+    public static void hookOnLoad(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+    }
+
+    public static void hookAppInstallation(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+
+
+        try{
+            Class<?> traceClass=XposedHelpers.findClass("android.content.pm.PackageInfoLite",loadPackageParam.classLoader);
+            Class<?> pm=XposedHelpers.findClass("android.content.pm.PackageInstaller",loadPackageParam.classLoader);
+            Class<?> download=XposedHelpers.findClass("android.app.DownloadManager",loadPackageParam.classLoader);
+            XposedHelpers.findAndHookConstructor(traceClass, Parcel.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    Parcel parcel=(Parcel)param.args[0];
+
+                }
+            });
+
+            /*XposedHelpers.findAndHookMethod(download, "request", Uri.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    Uri request=(Uri)param.args[0];
+                    Log.e("WTKLV",new Gson().toJson(request).toString());
+                }
+            }); */
+            XposedHelpers.findAndHookConstructor(download, ContentResolver.class, String.class, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+
+                }
+            });
+
+            XposedHelpers.findAndHookConstructor(pm, Context.class, PackageManager.class, "android.content.pm.IPackageInstaller",
+                    String.class, int.class, new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+
+                        }
+                    });
+        }catch (Exception e){
+
+        }
+
+    }
+
+    public static void hookDownloadManager(XC_LoadPackage.LoadPackageParam loadPackageParam) {
 
 
     }

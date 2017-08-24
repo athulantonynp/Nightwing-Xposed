@@ -50,18 +50,28 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
             Utils.restrictAppUninstallation(loadPackageParam);
         } */
 
-       for(int i=0;i<50;i++){
-           Log.e("PACKAGE",loadPackageParam.packageName);
-       }
 
         switch (loadPackageParam.packageName){
             case "com.android.settings":
-                Utils.removeFieldsFromSettings(loadPackageParam,loadPackageParam.classLoader);
+                //Utils.removeFieldsFromSettings(loadPackageParam,loadPackageParam.classLoader);
                 break;
             case "com.android.packageinstaller":
-                Log.e("OMKV","FOUND APP");
                 Utils.restrictAppUninstallation(loadPackageParam);
                 break;
+
+           /* case "android.app":
+                Log.e("WTKLV","FOUND PACKAGE android.app");
+                Utils.hookDownloadManager(loadPackageParam);
+                break; */
+           /* case "android.provider":
+                Log.e("WTKLV","FOUND PROVIDER");
+                break; */
+            case "android":
+                Utils.hookAppInstallation(loadPackageParam);
+            case "com.android.providers.downloads":
+                //Utils.hookOnAppInstallation(loadPackageParam);
+                break;
+
         }
 
     }
