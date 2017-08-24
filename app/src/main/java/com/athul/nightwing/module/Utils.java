@@ -2,36 +2,22 @@ package com.athul.nightwing.module;
 
 import android.app.Activity;
 import android.app.AndroidAppHelper;
-import android.app.DownloadManager;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.XModuleResources;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
-
 import android.os.Parcel;
-import android.util.AttributeSet;
-import android.util.Log;
 
 import com.athul.nightwing.R;
-import com.google.gson.Gson;
 
-import org.xmlpull.v1.XmlPullParser;
-
-import java.io.File;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
