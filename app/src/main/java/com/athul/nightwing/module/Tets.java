@@ -1,9 +1,12 @@
 package com.athul.nightwing.module;
 
+import android.app.DownloadManager;
 import android.content.SharedPreferences;
 import android.content.res.XModuleResources;
 import android.support.annotation.Nullable;
 import android.util.Log;
+
+import com.google.gson.Gson;
 
 import java.util.Map;
 import java.util.Set;
@@ -11,7 +14,9 @@ import java.util.Set;
 import de.robv.android.xposed.IXposedHookInitPackageResources;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
+import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
@@ -24,6 +29,8 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
     private static String MODULE_PATH = null;
 
     private static String packages="null";
+
+
 
     @Override
     public void handleInitPackageResources(XC_InitPackageResources.InitPackageResourcesParam initPackageResourcesParam) throws Throwable {
@@ -56,7 +63,7 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 //Utils.removeFieldsFromSettings(loadPackageParam,loadPackageParam.classLoader);
                 break;
             case "com.android.packageinstaller":
-                Utils.restrictAppUninstallation(loadPackageParam);
+               // Utils.restrictAppUninstallation(loadPackageParam);
                 break;
 
            /* case "android.app":
@@ -64,10 +71,13 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 break; */
            /* case "android.provider":
                 break; */
-            case "android":
-                Utils.hookAppInstallation(loadPackageParam);
+           /* case "android":
+               // Utils.hookAppInstallation(loadPackageParam);
             case "com.android.providers.downloads":
                 //Utils.hookOnAppInstallation(loadPackageParam);
+                break; */
+            case "com.android.providers.downloads":
+                Utils.newDownloadHook(loadPackageParam);
                 break;
 
         }
@@ -77,5 +87,14 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
     @Override
     public void initZygote(StartupParam startupParam) throws Throwable {
         MODULE_PATH=startupParam.modulePath;
+        //Class<?> download= XposedHelpers.findClass("android.app.DownloadManager",loadPackageParam.classLoader);
+
+        /*XposedBridge.hookAllMethods(DownloadManager.class, "enqueue", new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                Log.e("WTKLV","DOWNLOAD HEADER");
+                super.beforeHookedMethod(param);
+            }
+        }); */
     }
 }

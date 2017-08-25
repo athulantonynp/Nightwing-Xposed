@@ -2,6 +2,7 @@ package com.athul.nightwing.module;
 
 import android.app.Activity;
 import android.app.AndroidAppHelper;
+import android.app.DownloadManager;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -12,12 +13,17 @@ import android.content.res.XModuleResources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
+import android.text.LoginFilter;
+import android.util.Log;
 
 import com.athul.nightwing.R;
 
+import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.Arrays;
 
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
@@ -197,8 +203,81 @@ public class Utils {
 
     }
 
-    public static void hookDownloadManager(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+    /**
+     * This method will hook on google playstore app download
+     * proceess
+     * @param loadPackageParam
+     */
+    public static void newDownloadHook(final XC_LoadPackage.LoadPackageParam loadPackageParam) {
 
 
+        XposedHelpers.findAndHookMethod("com.android.providers.downloads.DownloadThread", loadPackageParam.classLoader,
+                "executeDownload", new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        Log.e("WTKLV","HOOKED METHOD LOAD");
+                        Object fieldValue = XposedHelpers.getObjectField(param.thisObject, "mInfoDelta");
+                        Object uri= XposedHelpers.getObjectField(fieldValue, "mUri");
+
+                        URL urlNew=new URL((String) uri);
+
+                        if(!(urlNew.toString().contains("play.googleapis.com/market/download")&&
+                                urlNew.toString().contains("package.i.want.to.avoid"))) {
+
+                            final Activity act = (Activity) param.thisObject;
+
+
+                            try {
+                                Context context = (Context) AndroidAppHelper.currentApplication();
+                                Intent dialogIntent = new Intent();
+                                dialogIntent.setComponent(new ComponentName("com.athul.nightwing", "com.athul.nightwing.activities.ProhibitiedActivity"));
+                                dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                act.startActivity(dialogIntent);
+                                act.finish();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            act.finish();
+                           Log.e("WTKLV","IN CONDITION");
+                            ((Activity) (Context)XposedHelpers.getObjectField(param.thisObject,"mContext")).finish();
+                            return;
+
+
+                        }
+                    }
+                });
+
+        /*XposedHelpers.findAndHookMethod("android.app.DownloadManager", loadPackageParam.classLoader
+                , "enqueue", "android.app.DownloadManager.DownloadManager$Request",
+                new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        Log.e("WTKLV","FOUND METHOD");
+                    }
+                });
+
+      /*  try{
+            Log.e("WTKLV","IN TRY");
+            Class<?> download=XposedHelpers.findClass("android.app.DownloadManager",loadPackageParam.classLoader);
+            Log.e("WTKLV","SUCESS");
+
+        }catch (Exception e){
+                Log.e("WTKLV",e.getLocalizedMessage());
+        }
+
+        /*Class<?> request=XposedHelpers.findClass("android.app.DownloadManager.DownloadManager$Request",
+                loadPackageParam.classLoader);
+        Method method=download.getMethod("enqueue", request);
+        Log.e("WTKLV",method.toGenericString());
+        Log.e("WTKLV", method.toString());
+        XposedHelpers.findAndHookMethod(download, "enqueue", "android.app.DownloadManager$Request", new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                Log.e("WTKLV",param.toString());
+            }
+        }); */
     }
+
+
+
 }

@@ -12,6 +12,5 @@ import android.util.Log;
 public class InstallationReciever extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.e("WTKLV",String.valueOf(intent.getData()));
     }
 }
