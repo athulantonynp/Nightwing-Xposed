@@ -77,7 +77,11 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 //Utils.hookOnAppInstallation(loadPackageParam);
                 break; */
             case "com.android.providers.downloads":
-                Utils.newDownloadHook(loadPackageParam);
+               // Utils.newDownloadHook(loadPackageParam);
+                break;
+            case "com.android.launcher3":
+                Log.e("WTKLV","FOUND LANUCHER PACKAGE");
+                Utils.launcherHook(loadPackageParam);
                 break;
 
         }

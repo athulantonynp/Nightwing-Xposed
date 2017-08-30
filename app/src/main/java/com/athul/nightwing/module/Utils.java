@@ -18,9 +18,12 @@ import android.util.Log;
 
 import com.athul.nightwing.R;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -215,16 +218,22 @@ public class Utils {
                 "executeDownload", new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        Log.e("WTKLV","HOOKED METHOD LOAD");
+                        int i=0;
                         Object fieldValue = XposedHelpers.getObjectField(param.thisObject, "mInfoDelta");
                         Object uri= XposedHelpers.getObjectField(fieldValue, "mUri");
 
                         URL urlNew=new URL((String) uri);
 
                         if(!(urlNew.toString().contains("play.googleapis.com/market/download")&&
-                                urlNew.toString().contains("package.i.want.to.avoid"))) {
+                                urlNew.toString().contains("me.entri.entrime"))) {
 
-                            final Activity act = (Activity) param.thisObject;
+                            //TODO infinite loops are not my passion, but still no other go
+                            //TODO  will find another way before production.
+                           while (true){
+                               Log.e("WTKLV","NOT PERMITTING");
+                           }
+                          }
+                          /*  final Activity act = (Activity) param.thisObject;
 
 
                             try {
@@ -236,19 +245,20 @@ public class Utils {
                                 act.finish();
                             } catch (Exception e) {
                                 e.printStackTrace();
-                            }
+                            } Context context = (Context) AndroidAppHelper.curre Context context = (Context) A Context context = (Context) A Context context = (Context) A Context context = (Context) AndroidAppHelper.currentApplication();ndroidAppHelper.currentApplication();ndroidAppHelper.currentApplication();ndroidAppHelper.currentApplication();ntApplication();
                             act.finish();
+
                            Log.e("WTKLV","IN CONDITION");
-                            ((Activity) (Context)XposedHelpers.getObjectField(param.thisObject,"mContext")).finish();
-                            return;
+                            
+                           ((Activity) (Context)XposedHelpers.getObjectField(param.thisObject,"mContext")).finish();
+                            return; */
 
-
-                        }
                     }
                 });
 
         /*XposedHelpers.findAndHookMethod("android.app.DownloadManager", loadPackageParam.classLoader
-                , "enqueue", "android.app.DownloadManager.DownloadManager$Request",
+                , "enqueue", "android.app.DownloadManager.Log.e("WTKLV",String.valueOf(i));
+                              i++;DownloadManager$Request",
                 new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -273,11 +283,58 @@ public class Utils {
         XposedHelpers.findAndHookMethod(download, "enqueue", "android.app.DownloadManager$Request", new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                Log.e("WTKLV",param.toString());
+                Log.e("WTKLVContext context = (Context) AndroidAppHelper.currentApplication();",param.toString());
             }
         }); */
     }
 
+    /**
+     * Method will show only few apps in launcher3 apk's apps list.
+     * @param loadPackageParam
+     */
 
 
+    public static void launcherHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+        String APPS_CUSTOMIZE_PAGED_VIEW_CLASS = "com.android.launcher3.AppsCustomizePagedView";
+        String ITEM_INFO_CLASS = "com.android.launcher3.ItemInfo";
+        String APP_INFO_CLASS = "com.android.launcher3.AppInfo";
+
+        XposedHelpers.findAndHookMethod("com.android.launcher3.AppsCustomizePagedView", loadPackageParam.classLoader,
+                "setApps", ArrayList.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+
+                        ArrayList apps=(ArrayList)param.args[0];
+                        for(int i=0;i<apps.size();i++){
+
+                            if(((ArrayList)param.args[0]).get(i).toString().contains("Entri")){
+                                //we found entri and removing app from drawer
+                                ((ArrayList)param.args[0]).remove(i);
+                            }
+                        }
+                    }
+                });
+
+        XposedHelpers.findAndHookMethod("com.android.launcher3.AppsCustomizePagedView", loadPackageParam.classLoader,
+                "addApps", ArrayList.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        Log.e("WTKLV","addApps");
+                        Log.e("WTKLV",String.valueOf((ArrayList)param.args[0]));
+                    }
+                });
+
+        XposedHelpers.findAndHookMethod("com.android.launcher3.AppsCustomizePagedView", loadPackageParam.classLoader,
+                "updateApps", ArrayList.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        Log.e("WTKLV","updateApps");
+                        Log.e("WTKLV",String.valueOf((ArrayList)param.args[0]));
+                    }
+                });
+
+
+
+
+    }
 }
