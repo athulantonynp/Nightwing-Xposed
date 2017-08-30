@@ -303,15 +303,7 @@ public class Utils {
                 "setApps", ArrayList.class, new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-
-                        ArrayList apps=(ArrayList)param.args[0];
-                        for(int i=0;i<apps.size();i++){
-
-                            if(((ArrayList)param.args[0]).get(i).toString().contains("Entri")){
-                                //we found entri and removing app from drawer
-                                ((ArrayList)param.args[0]).remove(i);
-                            }
-                        }
+                        removeAppsFromDrawerMenu((ArrayList)param.args[0]);
                     }
                 });
 
@@ -319,8 +311,7 @@ public class Utils {
                 "addApps", ArrayList.class, new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        Log.e("WTKLV","addApps");
-                        Log.e("WTKLV",String.valueOf((ArrayList)param.args[0]));
+                        removeAppsFromDrawerMenu((ArrayList)param.args[0]);
                     }
                 });
 
@@ -328,13 +319,22 @@ public class Utils {
                 "updateApps", ArrayList.class, new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        Log.e("WTKLV","updateApps");
-                        Log.e("WTKLV",String.valueOf((ArrayList)param.args[0]));
+                        removeAppsFromDrawerMenu((ArrayList)param.args[0]);
                     }
                 });
 
 
 
 
+    }
+
+    private static void removeAppsFromDrawerMenu(ArrayList arg) {
+        for(int i=0;i<arg.size();i++){
+
+            if((arg.get(i).toString().contains("Entri"))){
+                //we found entri and removing app from drawer
+                arg.remove(i);
+            }
+        }
     }
 }
