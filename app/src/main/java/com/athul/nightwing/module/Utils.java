@@ -15,6 +15,9 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.text.LoginFilter;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import com.athul.nightwing.R;
 
@@ -30,6 +33,8 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
+
+import static de.robv.android.xposed.XposedBridge.log;
 
 /**
  * Created by athul on 17/8/17.
@@ -337,4 +342,18 @@ public class Utils {
             }
         }
     }
+
+    public static void gsbHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+
+       XposedHelpers.findAndHookMethod("com.android.launcher3.Launcher", loadPackageParam.classLoader,"onCreate",
+               Bundle.class, new XC_MethodHook() {
+                   @Override
+                   protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                       ((View)XposedHelpers.getObjectField(param.thisObject,"mSearchDropTargetBar"))
+                               .setVisibility(View.GONE);
+                   }
+               });
+
+    }
+
 }
