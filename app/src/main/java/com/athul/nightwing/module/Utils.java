@@ -353,7 +353,33 @@ public class Utils {
                                .setVisibility(View.GONE);
                    }
                });
-
     }
 
+    /**
+     * Method to remove Google Search bar from recent apps screen.
+     * @param loadPackageParam
+     */
+    public static void recentsHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+
+        XposedHelpers.findAndHookMethod("com.android.systemui.recents.RecentsActivity", loadPackageParam.classLoader,
+                "bindSearchBarAppWidget", new XC_MethodHook() {
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        ((View)XposedHelpers.getObjectField(param.thisObject,"mSearchAppWidgetHostView"))
+                                .setVisibility(View.GONE);
+
+                    }
+                });
+
+        XposedHelpers.findAndHookMethod("com.android.systemui.recents.views.RecentsView", loadPackageParam.classLoader,
+                "setSearchBarVisibility", int.class, new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        if( ((View)XposedHelpers.getObjectField(param.thisObject,"mSearchBar"))!=null){
+                            ((View) XposedHelpers.getObjectField(param.thisObject,"mSearchBar")).setVisibility(View.GONE);
+                        }
+                    }
+                });
+    }
 }
