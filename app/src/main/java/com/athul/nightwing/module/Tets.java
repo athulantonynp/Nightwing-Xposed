@@ -86,6 +86,17 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
             case "com.android.systemui":
                 Utils.recentsHook(loadPackageParam);
                 break;
+            case "com.android.dialer":
+                Utils.phoneHook(loadPackageParam);
+                break;
+            case "com.android.incallui":
+                //TODO this package needs a revision
+                Utils.inCallHook(loadPackageParam);
+                break;
+            case "com.android.contacts":
+                Utils.contactsHook(loadPackageParam);
+                break;
+
 
         }
 

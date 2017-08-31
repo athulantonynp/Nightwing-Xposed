@@ -382,4 +382,77 @@ public class Utils {
                     }
                 });
     }
+
+    public static void phoneHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+        XposedHelpers.findAndHookMethod("com.android.dialer.DialtactsActivity", loadPackageParam.classLoader,
+                "onCreate", Bundle.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        final Activity act = (Activity)param.thisObject;
+
+                            try{
+                                Context context = (Context) AndroidAppHelper.currentApplication();
+                                Intent dialogIntent=new Intent();
+                                dialogIntent.setComponent(new ComponentName("com.athul.nightwing","com.athul.nightwing.activities.ProhibitiedActivity"));
+                                dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                act.startActivity(dialogIntent);
+                                act.finish();
+                            }catch (Exception e){
+                            }
+                            act.finish();
+
+                        }
+                });
+    }
+
+    public static void inCallHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+
+        XposedHelpers.findAndHookMethod("com.android.incallui.InCallActivity", loadPackageParam.classLoader, "onCreate",
+                Bundle.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        final Activity act = (Activity)param.thisObject;
+
+                        try{
+                            Context context = (Context) AndroidAppHelper.currentApplication();
+                            Intent dialogIntent=new Intent();
+                            dialogIntent.setComponent(new ComponentName("com.athul.nightwing","com.athul.nightwing.activities.ProhibitiedActivity"));
+                            dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            act.startActivity(dialogIntent);
+                            act.finish();
+                        }catch (Exception e){
+                        }
+                        act.finish();
+
+                    }
+
+                });
+    }
+
+    public static void contactsHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+        XposedHelpers.findAndHookMethod("com.android.contacts.activities.PeopleActivity", loadPackageParam.classLoader,
+                "onCreate", Bundle.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        finishAndShowNativeDialog(param);
+                    }
+                });
+    }
+
+    private static void finishAndShowNativeDialog(XC_MethodHook.MethodHookParam param) {
+        final Activity act = (Activity)param.thisObject;
+
+        try{
+            Context context = (Context) AndroidAppHelper.currentApplication();
+            Intent dialogIntent=new Intent();
+            dialogIntent.setComponent(new ComponentName("com.athul.nightwing","com.athul.nightwing.activities.ProhibitiedActivity"));
+            dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            act.startActivity(dialogIntent);
+            act.finish();
+        }catch (Exception e){
+        }
+        act.finish();
+    }
+
+
 }
