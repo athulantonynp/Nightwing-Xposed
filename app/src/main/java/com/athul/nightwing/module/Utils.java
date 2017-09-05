@@ -553,6 +553,14 @@ public class Utils {
                     }
                 }
             });
+
+           /* XposedHelpers.findAndHookMethod("android.app.ActivityManager", loadPackageParam.classLoader, "startActivity",
+                    Context.class, Intent.class, Bundle.class, new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            Log.e("WTKLV",((Intent)param.args[1]).toString());
+                        }
+                    }); */
         }catch (Exception e){
             Log.e("WTKLV",e.getLocalizedMessage());
         }
