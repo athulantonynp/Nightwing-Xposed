@@ -3,6 +3,8 @@ package com.athul.nightwing.module;
 import android.app.Activity;
 import android.app.AndroidAppHelper;
 import android.app.DownloadManager;
+import android.app.Instrumentation;
+import android.app.Notification;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -13,6 +15,7 @@ import android.content.res.XModuleResources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
+import android.provider.Settings;
 import android.text.LoginFilter;
 import android.util.Log;
 import android.view.View;
@@ -21,6 +24,7 @@ import android.widget.FrameLayout;
 
 import com.athul.nightwing.R;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -454,5 +458,128 @@ public class Utils {
         act.finish();
     }
 
+    /*
+    Method descriptions will be added later.
+    please be patient.
+     */
 
+    public static void externalSdCardHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+
+        XposedHelpers.findAndHookMethod("android.support.v4.content.ContextCompat", loadPackageParam.classLoader,
+                "getExternalFilesDirs", Context.class, String.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        Log.e("WTKLV","BEFORE EXT");
+                    }
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        Log.e("WTKLV","AFTER EXT");
+                        File[] resultArray=(File[])param.getResult();
+                        File[] finalArray=new File[1];
+                        for(File file:resultArray){
+                            try
+                            {
+                                Log.e("WTKLV",file.getName());
+                            }catch (Exception e){
+                                e.printStackTrace();
+                            }
+
+                        }
+
+                    }
+
+                });
+    }
+
+    public static void notificationHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+        Log.e("WTKLV","NOTIFIC SUPPORT");
+        final Class<?> traceClass = XposedHelpers.findClass("android.app.NotificationManager", null);
+        try{
+            Log.e("WTKLV",traceClass.getMethods().toString());
+        }catch (Exception e){
+            Log.e("WTKLV",e.getLocalizedMessage());
+        }
+
+        try{
+            XposedHelpers.findAndHookMethod("android.app.NotificationManager", loadPackageParam.classLoader,
+                    "notify", int.class, Notification.class, new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+
+                            Log.e("WTKLV",((Notification)param.args[1]).toString());
+                        }
+
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            super.afterHookedMethod(param);
+                        }
+                    });
+
+            XposedHelpers.findAndHookMethod("android.provider.Settings.Global", loadPackageParam.classLoader, "getInt", ContentResolver.class, String.class, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    XposedBridge.log("hideUSBDebugging: hook Settings.Global.getInt method");
+                    if (param.args[1].equals(Settings.Global.ADB_ENABLED)) {
+                        param.setResult(0);
+                    }
+
+                }
+            });
+
+            XposedHelpers.findAndHookMethod("android.provider.Settings.Secure", loadPackageParam.classLoader, "getInt", ContentResolver.class, String.class, int.class, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    XposedBridge.log("hideUSBDebugging: hook Settings.Secure.getInt method");
+                    if (param.args[1].equals(Settings.Secure.ADB_ENABLED)) {
+                        param.setResult(0);
+                    }
+                    if(param.args[1].equals("device_provisioned")){
+                        param.setResult(0);
+                    }
+                }
+            });
+
+            XposedHelpers.findAndHookMethod("android.provider.Settings.Secure", loadPackageParam.classLoader, "getInt", ContentResolver.class, String.class, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    XposedBridge.log("hideUSBDebugging: hook Settings.Secure.getInt method");
+                    if (param.args[1].equals(Settings.Secure.ADB_ENABLED)) {
+                        param.setResult(0);
+                    }
+                    if(param.args[1].equals("device_provisioned")){
+                        param.setResult(0);
+                    }
+                }
+            });
+        }catch (Exception e){
+            Log.e("WTKLV",e.getLocalizedMessage());
+        }
+
+    }
+
+    public static void incomingHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+        XposedHelpers.findAndHookMethod("com.android.phone.CallNotifier", loadPackageParam.classLoader, "onNewRingingConnection",
+                "android.os.AsyncResult", new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        super.beforeHookedMethod(param);
+                    }
+                });
+
+        XposedHelpers.findAndHookMethod("com.android.phone.CallController", loadPackageParam.classLoader, "placeCall", Intent.class,
+                new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+
+                        ((Intent)param.args[0]).setAction(null);
+                        ((Intent)param.args[0]).setData(null);
+                    }
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        super.afterHookedMethod(param);
+                    }
+                });
+    }
 }

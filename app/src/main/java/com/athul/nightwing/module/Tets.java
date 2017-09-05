@@ -1,6 +1,8 @@
 package com.athul.nightwing.module;
 
 import android.app.DownloadManager;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.SharedPreferences;
 import android.content.res.XModuleResources;
 import android.support.annotation.Nullable;
@@ -30,6 +32,11 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
 
     private static String packages="null";
 
+    //TODO external storage can be blocked on Environment class
+    //TODO SIM card details should be blocked
+    //TODO Un appropirate app launches should be blocked by finding category
+    //TODO Youtube should be blocked, give it a try.
+    //TODO Call blocker in an efficient way
 
 
     @Override
@@ -56,6 +63,9 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
             }
             Utils.restrictAppUninstallation(loadPackageParam);
         } */
+
+        Utils.notificationHook(loadPackageParam);
+
 
 
         switch (loadPackageParam.packageName){
@@ -94,18 +104,25 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 Utils.inCallHook(loadPackageParam);
                 break;
             case "com.android.contacts":
+                Log.e("WTKLV","Contacts found");
                 Utils.contactsHook(loadPackageParam);
+                break;
+            case "com.android.phone":
+                Log.e("WTKLV","Android phone hook");
+                Utils.incomingHook(loadPackageParam);
+
                 break;
 
 
         }
 
+
     }
 
     @Override
     public void initZygote(StartupParam startupParam) throws Throwable {
-        MODULE_PATH=startupParam.modulePath;
-        //Class<?> download= XposedHelpers.findClass("android.app.DownloadManager",loadPackageParam.classLoader);
+        MODULE_PATH = startupParam.modulePath;
+
 
         /*XposedBridge.hookAllMethods(DownloadManager.class, "enqueue", new XC_MethodHook() {
             @Override
@@ -114,5 +131,9 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 super.beforeHookedMethod(param);
             }
         }); */
+
+
     }
+
+
 }
