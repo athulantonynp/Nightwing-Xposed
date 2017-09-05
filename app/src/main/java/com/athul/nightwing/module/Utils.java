@@ -333,6 +333,13 @@ public class Utils {
                 });
 
 
+        XposedHelpers.findAndHookMethod("com.android.launcher3.Launcher", loadPackageParam.classLoader, "isWorkspaceLocked", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                param.setResult(true);
+            }
+        });
+
 
 
     }
