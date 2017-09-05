@@ -340,10 +340,10 @@ public class Utils {
     private static void removeAppsFromDrawerMenu(ArrayList arg) {
         for(int i=0;i<arg.size();i++){
 
-            if((arg.get(i).toString().contains("Entri"))){
+           /* if((arg.get(i).toString().contains("Entri"))){
                 //we found entri and removing app from drawer
                 arg.remove(i);
-            }
+            }*/
         }
     }
 
@@ -493,13 +493,7 @@ public class Utils {
     }
 
     public static void notificationHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
-        Log.e("WTKLV","NOTIFIC SUPPORT");
         final Class<?> traceClass = XposedHelpers.findClass("android.app.NotificationManager", null);
-        try{
-            Log.e("WTKLV",traceClass.getMethods().toString());
-        }catch (Exception e){
-            Log.e("WTKLV",e.getLocalizedMessage());
-        }
 
         try{
             XposedHelpers.findAndHookMethod("android.app.NotificationManager", loadPackageParam.classLoader,
@@ -581,5 +575,41 @@ public class Utils {
                         super.afterHookedMethod(param);
                     }
                 });
+    }
+
+    public static void USBMenuHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+        String[] classNames = {
+                "com.android.server.usb.UsbDeviceManager$UsbHandler",
+                "com.android.server.usb.UsbDeviceManagerEx$UsbHandlerEx"
+        };
+
+        for (String className : classNames) {
+            Class<?> cls;
+            try {
+                cls = XposedHelpers.findClass(className, loadPackageParam.classLoader);
+            } catch (XposedHelpers.ClassNotFoundError e) {
+                continue;
+            }
+
+
+
+            try {
+                XposedHelpers.findAndHookMethod(cls, "updateAdbNotification", new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        param.setResult(null);
+                    }
+                });
+
+                XposedHelpers.findAndHookMethod(cls, "updateUsbNotification", new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        param.setResult(null);
+                    }
+                });
+            } catch (Throwable e) {
+                Log.e("WTKLV",e.getLocalizedMessage());
+            }
+        }
     }
 }

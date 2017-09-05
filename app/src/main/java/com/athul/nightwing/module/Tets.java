@@ -64,11 +64,14 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
             Utils.restrictAppUninstallation(loadPackageParam);
         } */
 
-        Utils.notificationHook(loadPackageParam);
 
 
 
         switch (loadPackageParam.packageName){
+            case "android":
+                Utils.notificationHook(loadPackageParam);
+                Utils.USBMenuHook(loadPackageParam);
+                break;
             case "com.android.settings":
                 //Utils.removeFieldsFromSettings(loadPackageParam,loadPackageParam.classLoader);
                 break;
@@ -90,8 +93,8 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                // Utils.newDownloadHook(loadPackageParam);
                 break;
             case "com.android.launcher3":
-                Utils.launcherHook(loadPackageParam);
                 Utils.gsbHook(loadPackageParam);
+                Utils.launcherHook(loadPackageParam);
                 break;
             case "com.android.systemui":
                 Utils.recentsHook(loadPackageParam);
@@ -104,16 +107,11 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 Utils.inCallHook(loadPackageParam);
                 break;
             case "com.android.contacts":
-                Log.e("WTKLV","Contacts found");
                 Utils.contactsHook(loadPackageParam);
                 break;
             case "com.android.phone":
-                Log.e("WTKLV","Android phone hook");
                 Utils.incomingHook(loadPackageParam);
-
                 break;
-
-
         }
 
 
