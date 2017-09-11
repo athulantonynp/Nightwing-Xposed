@@ -5,15 +5,24 @@ import android.app.AndroidAppHelper;
 import android.app.DownloadManager;
 import android.app.Instrumentation;
 import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.content.res.XModuleResources;
+import android.hardware.Camera;
+import android.hardware.camera2.CameraDevice;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcel;
 import android.provider.Settings;
 import android.text.LoginFilter;
@@ -23,6 +32,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.athul.nightwing.R;
+import com.athul.nightwing.activities.Splash;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -33,12 +43,15 @@ import java.util.Arrays;
 import java.util.List;
 
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 import static de.robv.android.xposed.XposedBridge.log;
+import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
+import static de.robv.android.xposed.XposedHelpers.getObjectField;
 
 /**
  * Created by athul on 17/8/17.
@@ -238,9 +251,23 @@ public class Utils {
 
                             //TODO infinite loops are not my passion, but still no other go
                             //TODO  will find another way before production.
-                           while (true){
+                          /* while (true){
                                Log.e("WTKLV","NOT PERMITTING");
-                           }
+                           } */
+
+                            try{
+
+                                Context context = (Context) AndroidAppHelper.currentApplication();
+                                Log.e("WTKLV","CURENT"+context.getPackageName());
+                                SharedPreferences sharedPreferences=context.getSharedPreferences(Constants.sharedPreferenceName,
+                                        Context.MODE_WORLD_READABLE);
+                                SharedPreferences.Editor editor=sharedPreferences.edit();
+                                editor.putString(Constants.downloadIdentifierKey,"entri");
+                                editor.apply();
+                                editor.commit();
+                            }catch (Exception e){
+                                Log.e("WTKLV",e.getLocalizedMessage());
+                            }
                           }
                           /*  final Activity act = (Activity) param.thisObject;
 
@@ -262,6 +289,37 @@ public class Utils {
                            ((Activity) (Context)XposedHelpers.getObjectField(param.thisObject,"mContext")).finish();
                             return; */
 
+                    }
+                });
+
+        XposedHelpers.findAndHookMethod("com.android.providers.downloads.DownloadThread", loadPackageParam.classLoader,
+                "checkConnectivity", new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        Object fieldValue = XposedHelpers.getObjectField(param.thisObject, "mInfoDelta");
+                        Object uri= XposedHelpers.getObjectField(param.thisObject, "mUri");
+
+                        URL urlNew=new URL((String) uri);
+
+                        if(!(urlNew.toString().contains("play.googleapis.com/market/download")&&
+                                urlNew.toString().contains("me.entri.entrime"))) {
+                           /* while (true){
+
+                            } */
+                           try{
+                               XSharedPreferences xSharedPreferences=new XSharedPreferences("com.athul.nightwing");
+                               Context context = (Context) AndroidAppHelper.currentApplication();
+                               Log.e("WTKLV","CURENT"+context.getPackageName());
+                               SharedPreferences.Editor editor=xSharedPreferences.edit();
+                               editor.putString(Constants.downloadIdentifierKey,"entri");
+                               editor.apply();
+                               editor.commit();
+                           }catch (Exception e){
+                               Log.e("WTKLV",e.getLocalizedMessage());
+                           }
+
+
+                        }
                     }
                 });
 
@@ -336,7 +394,7 @@ public class Utils {
         XposedHelpers.findAndHookMethod("com.android.launcher3.Launcher", loadPackageParam.classLoader, "isWorkspaceLocked", new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                param.setResult(true);
+                //param.setResult(true);
             }
         });
 
@@ -461,6 +519,7 @@ public class Utils {
             act.startActivity(dialogIntent);
             act.finish();
         }catch (Exception e){
+            Log.e("WTKLV",e.getLocalizedMessage());
         }
         act.finish();
     }
@@ -626,5 +685,98 @@ public class Utils {
                 Log.e("WTKLV",e.getLocalizedMessage());
             }
         }
+    }
+
+    public static void cameraHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+
+        try{
+            XposedHelpers.findAndHookConstructor(Camera.class, int.class, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    Log.e("WTKLV","FOUND CAMERA");
+                    if (param.hasThrowable()) {
+                        return;
+                    }
+
+                    final int sourceId = (int) param.args[0];
+                    final Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+                    Camera.getCameraInfo(sourceId, cameraInfo);
+
+                    String facingStr;
+                    switch (cameraInfo.facing) {
+                        case Camera.CameraInfo.CAMERA_FACING_FRONT:
+                            facingStr = "front";
+                            break;
+                        case Camera.CameraInfo.CAMERA_FACING_BACK:
+                            facingStr = "back";
+                            break;
+                        default:
+                            facingStr = "unknown";
+                            break;
+                    }
+
+
+                }
+            });
+
+        }catch (Exception e){
+            Log.e("WTKLV",e.getLocalizedMessage());
+        }
+
+
+
+    }
+
+    public static void cameraAppHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+        Log.e("WTKLV","CAMERA APP");
+        XposedHelpers.findAndHookMethod("com.android.camera.CameraActivity", loadPackageParam.classLoader, "onCreate",
+                Bundle.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        finishAndShowNativeDialog(param);
+                    }
+                });
+    }
+
+    public static void NotificationContentHook(final XC_LoadPackage.LoadPackageParam loadPackageParam) {
+        //TODO MODIFY CONTENT OF NOTIFICATION IF ANY
+        findAndHookMethod(NotificationManager.class, "notify", String.class, int.class, Notification.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                Notification notification = (Notification) param.args[2];
+
+                    Context context = (Context) getObjectField(param.thisObject, "mContext");
+                    String appName = context.getPackageManager().getApplicationInfo(loadPackageParam.packageName, 0).loadLabel(context.getPackageManager()).toString();
+                    Resources modRes = context.getPackageManager().getResourcesForApplication("com.athul.nightwing");
+                    String replacement = modRes.getString(modRes.getIdentifier("notification_hidden_by_maxlock", "string", "com.athul.nightwing"));
+                    Notification.Builder b = new Notification.Builder(context).setContentTitle(appName).setContentText(replacement);
+                    notification.contentView = b.build().contentView;
+                    notification.bigContentView = null;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                        notification.headsUpContentView = null;
+                    notification.tickerText = replacement;
+                Intent notificationIntent = new Intent(context, Splash.class);
+                PendingIntent contentIntent = PendingIntent.getActivity(context.getApplicationContext(), 0, notificationIntent, 0);
+
+                ((Notification)param.args[2]).contentIntent=contentIntent;
+                ((Notification)param.args[2]).contentView=null;
+
+                }
+
+        });
+    }
+
+    public static void hookAppLaunching(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+        Log.e("WTKLV","KING USER FOUND");
+        findAndHookMethod(Activity.class, "onStart", new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                final Activity activity = (Activity) param.thisObject;
+                String activityName = activity.getClass().getName();
+
+                activity.finish();
+
+            }
+        });
     }
 }

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Nightwing</string>
+    <string name="notification_hidden_by_maxlock">Content hidden by MaxLock</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.athul.nightwing.activities;
 
 import android.Manifest;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -10,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
@@ -54,15 +56,19 @@ public class Splash extends AppCompatActivity {
         else
             Log.e("WTKLV","INTERNAL");*/
 
-        NotificationCompat.Builder mBuilder =   new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.drawer) // notification icon
-                .setContentTitle("Notification!") // title for notification
-                .setContentText("Hello word") // message for notification
-                .setAutoCancel(true); // clear notification after click
-        Intent intent = new Intent(this, Splash.class);
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(0, mBuilder.build());
+        Notification n  = new Notification.Builder(this)
+                .setContentTitle("New mail from " + "test@gmail.com")
+                .setContentText("Subject")
+                .setSmallIcon(R.drawable.drawer)
+                .setAutoCancel(true)
+                .build();
+
+
+
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        notificationManager.notify(0, n);
 
     }
 
