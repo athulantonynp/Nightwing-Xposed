@@ -50,6 +50,7 @@ import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 import static de.robv.android.xposed.XposedBridge.log;
+import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
 
@@ -94,15 +95,70 @@ public class Utils {
                new XC_MethodHook() {
                    @Override
                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                       Activity act = (Activity)param.thisObject;
-                       act.finish();
+                      /* Activity act = (Activity)param.thisObject;
+                       act.finish(); */
+                       XposedHelpers.setBooleanField(param.thisObject,"mDisplaySearch",false);
+
                    }
 
+                   @Override
+                   protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+
+                       XposedHelpers.setBooleanField(param.thisObject,"mDisplaySearch",false);
+                   }
                }
 
 
 
        );
+        XposedHelpers.findAndHookMethod("com.android.settings.SettingsActivity", loadPackageParam.classLoader, "updateTilesList",List.class,
+                new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                      /* Activity act = (Activity)param.thisObject;
+                       act.finish(); */
+                        ((List)param.args[0]).remove(3);
+
+
+                    }
+
+                }
+
+
+
+        );
+        XposedHelpers.findAndHookMethod("com.android.settings.dashboard.DashboardCategory", loadPackageParam.classLoader,
+                "getTile",int.class,
+                new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                      /* Activity act = (Activity)param.thisObject;
+                       act.finish(); */
+
+                        if(((int)param.args[0])!=0){
+                           param.args[0]=0;
+                        }
+                    }
+
+                }
+
+
+
+        );
+        XposedHelpers.findAndHookMethod("com.android.settings.dashboard.DashboardCategory", loadPackageParam.classLoader,
+                "getTilesCount", new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+
+                        param.setResult(1);
+                    }
+
+                }
+
+
+
+        );
+
 
 
     }
