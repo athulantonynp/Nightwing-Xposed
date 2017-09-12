@@ -40,6 +40,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import de.robv.android.xposed.XC_MethodHook;
@@ -59,6 +60,11 @@ import static de.robv.android.xposed.XposedHelpers.getObjectField;
  */
 
 public class Utils {
+
+    private static Field itemInfoTitleField;
+    private static Field appInfoComponentNameField;
+    public static final String ITEM_INFO_CLASS = "com.android.launcher3.ItemInfo";
+    public static final String APP_INFO_CLASS = "com.android.launcher3.AppInfo";
 
     public static void changeDrawerIcon(XC_InitPackageResources.InitPackageResourcesParam resparam, XModuleResources modRes) {
 
@@ -290,6 +296,19 @@ public class Utils {
         String ITEM_INFO_CLASS = "com.android.launcher3.ItemInfo";
         String APP_INFO_CLASS = "com.android.launcher3.AppInfo";
 
+        try {
+            final Class<?> itemInfoClass = XposedHelpers.findClass(ITEM_INFO_CLASS, loadPackageParam.classLoader);
+            itemInfoTitleField = itemInfoClass.getDeclaredField("title");
+            itemInfoTitleField.setAccessible(true);
+
+            final Class<?> appInfoClass = XposedHelpers.findClass(APP_INFO_CLASS, loadPackageParam.classLoader);
+            appInfoComponentNameField = appInfoClass.getDeclaredField("componentName");
+            appInfoComponentNameField.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            Log.e("WTKLV",e.getLocalizedMessage());
+        }
+
+
         XposedHelpers.findAndHookMethod("com.android.launcher3.AppsCustomizePagedView", loadPackageParam.classLoader,
                 "setApps", ArrayList.class, new XC_MethodHook() {
                     @Override
@@ -339,22 +358,46 @@ public class Utils {
 
     }
 
-    private static void removeAppsFromDrawerMenu(ArrayList arg) {
-        for(int i=0;i<arg.size();i++){
+    @SuppressWarnings("rawtypes")
+    private static void removeAppsFromDrawerMenu(ArrayList arg) throws IllegalAccessException {
 
-            /*if((arg.get(i).toString().contains("Entri"))){
-                //we found entri and removing app from drawer
-                arg.remove(i);
-            } */
-
-
-
-            for(int j=0;j<Constants.showOnlyApps.length;j++){
-                if((arg.get(i).toString().contains(Constants.showOnlyApps[j]))==false){
-                    arg.remove(i);
+        Iterator appIter = arg.iterator();
+        while (appIter.hasNext()) {
+            Object app = appIter.next();
+            String label = (String) itemInfoTitleField.get(app);
+            String packageName = ((ComponentName) appInfoComponentNameField.get(app)).getPackageName();
+            /*for (String appToHide : Constants.showOnlyApps) {
+                if (appToHide.equals(packageName)) {
+                    appIter.remove();
+                    break;
+                }else {
+                    break;
                 }
+            }*/
+            switch (packageName){
+                case "me.entri.entrime":
+                    Log.e("WTKLV","ENTRI FOUND");
+                    break;
+                case "com.athul.nightwing":
+                    Log.e("WTKLV","NW FOUND");
+                    break;
+                case "de.robv.android.xposed.installer":
+                    Log.e("WTKLV","X FOUND");
+                    break;
+                case "com.android.vending":
+                    Log.e("WTKLV","playstore FOUND");
+                    break;
+                case "com.android.settings":
+                    Log.e("WTKLV","settings FOUND");
+                    break;
+                default:
+                    appIter.remove();
+                    break;
             }
+
+
         }
+
     }
 
     public static void gsbHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
