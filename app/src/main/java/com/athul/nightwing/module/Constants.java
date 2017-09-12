@@ -10,4 +10,5 @@ public class Constants {
     public static String entriPackageName="me.entri.entrime";
     public static String downloadIdentifierKey="download_key";
     public static String sharedPreferenceName="shared_nightwing";
+    public static String[] showOnlyApps={"Entri","Nightwing","Xposed","Play Store"};
 }

@@ -118,12 +118,9 @@ public class Utils {
                       /* Activity act = (Activity)param.thisObject;
                        act.finish(); */
                         ((List)param.args[0]).remove(3);
-
-
                     }
 
                 }
-
 
 
         );
@@ -222,67 +219,11 @@ public class Utils {
 
     }
 
-    public static void hookOnAppInstallation(XC_LoadPackage.LoadPackageParam loadPackageParam) {
-
-        Class<?> traceClass=XposedHelpers.findClass("com.android.defcontainer.DefaultContainerService",loadPackageParam.classLoader);
-
-        XposedHelpers.findAndHookMethod(traceClass, "copyResourceInner", Uri.class, String.class,
-                String.class, String.class, new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-
-
-                    }
-                });
-
-
-    }
 
 
     public static void hookOnLoad(XC_LoadPackage.LoadPackageParam loadPackageParam) {
     }
 
-    public static void hookAppInstallation(XC_LoadPackage.LoadPackageParam loadPackageParam) {
-
-
-        try{
-            Class<?> traceClass=XposedHelpers.findClass("android.content.pm.PackageInfoLite",loadPackageParam.classLoader);
-            Class<?> pm=XposedHelpers.findClass("android.content.pm.PackageInstaller",loadPackageParam.classLoader);
-            Class<?> download=XposedHelpers.findClass("android.app.DownloadManager",loadPackageParam.classLoader);
-            XposedHelpers.findAndHookConstructor(traceClass, Parcel.class, new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    Parcel parcel=(Parcel)param.args[0];
-
-                }
-            });
-
-            /*XposedHelpers.findAndHookMethod(download, "request", Uri.class, new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    Uri request=(Uri)param.args[0];
-                    Log.e("WTKLV",new Gson().toJson(request).toString());
-                }
-            }); */
-            XposedHelpers.findAndHookConstructor(download, ContentResolver.class, String.class, new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-
-                }
-            });
-
-            XposedHelpers.findAndHookConstructor(pm, Context.class, PackageManager.class, "android.content.pm.IPackageInstaller",
-                    String.class, int.class, new XC_MethodHook() {
-                        @Override
-                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-
-                        }
-                    });
-        }catch (Exception e){
-
-        }
-
-    }
 
     /**
      * This method will hook on google playstore app download
@@ -302,113 +243,40 @@ public class Utils {
 
                         URL urlNew=new URL((String) uri);
 
-                        if(!(urlNew.toString().contains("play.googleapis.com/market/download")&&
-                                urlNew.toString().contains("me.entri.entrime"))) {
+                        if((urlNew.toString().contains("play.googleapis.com/market/download"))) {
 
-                            //TODO infinite loops are not my passion, but still no other go
-                            //TODO  will find another way before production.
-                          /* while (true){
-                               Log.e("WTKLV","NOT PERMITTING");
-                           } */
-
-                            try{
-
-                                Context context = (Context) AndroidAppHelper.currentApplication();
-                                Log.e("WTKLV","CURENT"+context.getPackageName());
-                                SharedPreferences sharedPreferences=context.getSharedPreferences(Constants.sharedPreferenceName,
-                                        Context.MODE_WORLD_READABLE);
-                                SharedPreferences.Editor editor=sharedPreferences.edit();
-                                editor.putString(Constants.downloadIdentifierKey,"entri");
-                                editor.apply();
-                                editor.commit();
-                            }catch (Exception e){
-                                Log.e("WTKLV",e.getLocalizedMessage());
+                            if(urlNew.toString().contains("me.entri.entrime")||
+                                    urlNew.toString().contains("com.google.android.gms")||
+                                    urlNew.toString().contains("com.android.vending")){
+                                packageDownloadHook("entri");
+                            }else {
+                                packageDownloadHook("block");
                             }
-                          }
-                          /*  final Activity act = (Activity) param.thisObject;
 
 
-                            try {
-                                Context context = (Context) AndroidAppHelper.currentApplication();
-                                Intent dialogIntent = new Intent();
-                                dialogIntent.setComponent(new ComponentName("com.athul.nightwing", "com.athul.nightwing.activities.ProhibitiedActivity"));
-                                dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                                act.startActivity(dialogIntent);
-                                act.finish();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            } Context context = (Context) AndroidAppHelper.curre Context context = (Context) A Context context = (Context) A Context context = (Context) A Context context = (Context) AndroidAppHelper.currentApplication();ndroidAppHelper.currentApplication();ndroidAppHelper.currentApplication();ndroidAppHelper.currentApplication();ntApplication();
-                            act.finish();
-
-                           Log.e("WTKLV","IN CONDITION");
-                            
-                           ((Activity) (Context)XposedHelpers.getObjectField(param.thisObject,"mContext")).finish();
-                            return; */
-
-                    }
-                });
-
-        XposedHelpers.findAndHookMethod("com.android.providers.downloads.DownloadThread", loadPackageParam.classLoader,
-                "checkConnectivity", new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        Object fieldValue = XposedHelpers.getObjectField(param.thisObject, "mInfoDelta");
-                        Object uri= XposedHelpers.getObjectField(param.thisObject, "mUri");
-
-                        URL urlNew=new URL((String) uri);
-
-                        if(!(urlNew.toString().contains("play.googleapis.com/market/download")&&
-                                urlNew.toString().contains("me.entri.entrime"))) {
-                           /* while (true){
-
-                            } */
-                           try{
-                               XSharedPreferences xSharedPreferences=new XSharedPreferences("com.athul.nightwing");
-                               Context context = (Context) AndroidAppHelper.currentApplication();
-                               Log.e("WTKLV","CURENT"+context.getPackageName());
-                               SharedPreferences.Editor editor=xSharedPreferences.edit();
-                               editor.putString(Constants.downloadIdentifierKey,"entri");
-                               editor.apply();
-                               editor.commit();
-                           }catch (Exception e){
-                               Log.e("WTKLV",e.getLocalizedMessage());
-                           }
-
-
+                          }else {
+                            packageDownloadHook("normal");
                         }
+
                     }
                 });
 
-        /*XposedHelpers.findAndHookMethod("android.app.DownloadManager", loadPackageParam.classLoader
-                , "enqueue", "android.app.DownloadManager.Log.e("WTKLV",String.valueOf(i));
-                              i++;DownloadManager$Request",
-                new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        Log.e("WTKLV","FOUND METHOD");
-                    }
-                });
 
-      /*  try{
-            Log.e("WTKLV","IN TRY");
-            Class<?> download=XposedHelpers.findClass("android.app.DownloadManager",loadPackageParam.classLoader);
-            Log.e("WTKLV","SUCESS");
+    }
 
+    private static void packageDownloadHook(String packageName) {
+        try{
+
+            Context context = (Context) AndroidAppHelper.currentApplication();
+            SharedPreferences sharedPreferences=context.getSharedPreferences(Constants.sharedPreferenceName,
+                    Context.MODE_WORLD_READABLE);
+            SharedPreferences.Editor editor=sharedPreferences.edit();
+            editor.putString(Constants.downloadIdentifierKey,packageName);
+            editor.apply();
+            editor.commit();
         }catch (Exception e){
-                Log.e("WTKLV",e.getLocalizedMessage());
+            Log.e("WTKLV",e.getLocalizedMessage());
         }
-
-        /*Class<?> request=XposedHelpers.findClass("android.app.DownloadManager.DownloadManager$Request",
-                loadPackageParam.classLoader);
-        Method method=download.getMethod("enqueue", request);
-        Log.e("WTKLV",method.toGenericString());
-        Log.e("WTKLV", method.toString());
-        XposedHelpers.findAndHookMethod(download, "enqueue", "android.app.DownloadManager$Request", new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                Log.e("WTKLVContext context = (Context) AndroidAppHelper.currentApplication();",param.toString());
-            }
-        }); */
     }
 
     /**
@@ -428,6 +296,11 @@ public class Utils {
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                         removeAppsFromDrawerMenu((ArrayList)param.args[0]);
                     }
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        removeAppsFromDrawerMenu((ArrayList)XposedHelpers.getObjectField(ArrayList.class,"mApps"));
+                    }
                 });
 
         XposedHelpers.findAndHookMethod("com.android.launcher3.AppsCustomizePagedView", loadPackageParam.classLoader,
@@ -435,6 +308,10 @@ public class Utils {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                         removeAppsFromDrawerMenu((ArrayList)param.args[0]);
+                    }
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        removeAppsFromDrawerMenu((ArrayList)XposedHelpers.getObjectField(ArrayList.class,"mApps"));
                     }
                 });
 
@@ -444,13 +321,17 @@ public class Utils {
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                         removeAppsFromDrawerMenu((ArrayList)param.args[0]);
                     }
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        removeAppsFromDrawerMenu((ArrayList)XposedHelpers.getObjectField(ArrayList.class,"mApps"));
+                    }
                 });
 
 
         XposedHelpers.findAndHookMethod("com.android.launcher3.Launcher", loadPackageParam.classLoader, "isWorkspaceLocked", new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                //param.setResult(true);
+                param.setResult(true);
             }
         });
 
@@ -461,10 +342,18 @@ public class Utils {
     private static void removeAppsFromDrawerMenu(ArrayList arg) {
         for(int i=0;i<arg.size();i++){
 
-           /* if((arg.get(i).toString().contains("Entri"))){
+            /*if((arg.get(i).toString().contains("Entri"))){
                 //we found entri and removing app from drawer
                 arg.remove(i);
-            }*/
+            } */
+
+
+
+            for(int j=0;j<Constants.showOnlyApps.length;j++){
+                if((arg.get(i).toString().contains(Constants.showOnlyApps[j]))==false){
+                    arg.remove(i);
+                }
+            }
         }
     }
 
@@ -823,7 +712,7 @@ public class Utils {
     }
 
     public static void hookAppLaunching(XC_LoadPackage.LoadPackageParam loadPackageParam) {
-        Log.e("WTKLV","KING USER FOUND");
+
         findAndHookMethod(Activity.class, "onStart", new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
