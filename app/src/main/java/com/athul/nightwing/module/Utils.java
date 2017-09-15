@@ -2,6 +2,7 @@ package com.athul.nightwing.module;
 
 import android.app.Activity;
 import android.app.AndroidAppHelper;
+import android.app.Application;
 import android.app.DownloadManager;
 import android.app.Instrumentation;
 import android.app.Notification;
@@ -249,9 +250,29 @@ public class Utils {
         findAndHookMethod(Notification.Builder.class, "setContentTitle", CharSequence.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                Log.e("WTKLV",param.args[0].toString());
+                String urlNew = param.args[0].toString();
+
+               /* if (urlNew.toString().contains("Entri") ||
+                        urlNew.toString().contains("Playstore") ||
+                        urlNew.toString().contains("Playservices") ||
+                        urlNew.toString().contains("Play Services")) {
+
+                    packageDownloadHook("entri");
+                } else {
+                    /*Application app=AndroidAppHelper.currentApplication();
+                    Intent intent = new Intent(Intent.ACTION_MAIN);
+                    intent.addCategory(Intent.CATEGORY_HOME);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    app.startActivity(intent);
+                    packageDownloadHook("block");
+                } */
+
+
+                Context context = (Context) AndroidAppHelper.currentApplication();
+                Log.e("WTKLV", "ORIGINAL" + context.getPackageName());
                 super.beforeHookedMethod(param);
             }
+
 
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -263,8 +284,6 @@ public class Utils {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 Notification notification = (Notification) param.args[2];
-                Context context = (Context) AndroidAppHelper.currentApplication();
-                Log.e("WTKLV","ORIGINAL"+context.getPackageName());
                 /*Context context = (Context) getObjectField(param.thisObject, "mContext");
                 String appName = context.getPackageManager().getApplicationInfo(loadPackageParam.packageName, 0).loadLabel(context.getPackageManager()).toString();
                 Resources modRes = context.getPackageManager().getResourcesForApplication("com.athul.nightwing");

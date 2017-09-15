@@ -123,7 +123,7 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 }
             });
 
-           /* XposedBridge.hookAllMethods(packageParserClass, "parseBaseApk",
+           XposedBridge.hookAllMethods(packageParserClass, "parseBaseApk",
                     new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -144,8 +144,6 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                            try{
                                if(param.args[1].toString().contains(".tmp")){
 
-                                   /*param.args[2]=0;
-                                   param.args[1]="podaa";
                                    xSharedPreferences=new XSharedPreferences("com.android.providers.media",Constants.sharedPreferenceName);
                                    xSharedPreferences.makeWorldReadable();
                                    if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("block")){
@@ -164,7 +162,7 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                                        Log.e("WTKLV","ERROR FOUND");
                                    }
                                    if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("entri")){
-                                       Log.e("WTKLV","ENTRI FOUND");
+                                       Log.e("WTKLV","ALLOWED APP FOUND");
                                    }
 
                                }
@@ -172,7 +170,7 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                                Log.e("WTKLV",e.getLocalizedMessage());
                            }
                         }
-                    });  */
+                    });
           /*  XposedBridge.hookAllMethods(packageParserClass, "isApkPath",
                     new XC_MethodHook() {
                         @Override
