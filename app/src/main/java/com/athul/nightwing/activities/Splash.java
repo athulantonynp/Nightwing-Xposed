@@ -22,6 +22,9 @@ import android.view.View;
 import android.widget.Button;
 
 import com.athul.nightwing.R;
+import com.davemorrissey.labs.subscaleview.ImageSource;
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
+import com.github.chrisbanes.photoview.PhotoView;
 
 import java.io.File;
 import java.util.List;
@@ -34,13 +37,9 @@ public class Splash extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-        btn = (Button) findViewById(R.id.btn_launch);
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getLauncherName();
-            }
-        });
+        SubsamplingScaleImageView photoView = (SubsamplingScaleImageView) findViewById(R.id.photo_view);
+        //photoView.setImageResource(R.drawable.image);
+        photoView.setImage(ImageSource.resource(R.drawable.image2));
     }
 
     private void getLauncherName() {

@@ -10,13 +10,17 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+
     }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
 }
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
@@ -26,6 +30,8 @@ dependencies {
     compile group: 'com.google.code.gson', name: 'gson', version: '2.7'
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-alpha7'
+    compile 'com.github.chrisbanes:PhotoView:2.0.0'
+    compile 'com.davemorrissey.labs:subsampling-scale-image-view:3.6.0'
     testCompile 'junit:junit:4.12'
     provided 'de.robv.android.xposed:api:82'
 }

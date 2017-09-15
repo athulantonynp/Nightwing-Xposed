@@ -30,18 +30,26 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.RemoteViews;
 
 import com.athul.nightwing.R;
 import com.athul.nightwing.activities.Splash;
 
+
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XSharedPreferences;
@@ -238,6 +246,45 @@ public class Utils {
      */
     public static void newDownloadHook(final XC_LoadPackage.LoadPackageParam loadPackageParam) {
 
+        findAndHookMethod(Notification.Builder.class, "setContentTitle", CharSequence.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                Log.e("WTKLV",param.args[0].toString());
+                super.beforeHookedMethod(param);
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                super.afterHookedMethod(param);
+            }
+        });
+
+        findAndHookMethod(NotificationManager.class, "notify", String.class, int.class, Notification.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                Notification notification = (Notification) param.args[2];
+                Context context = (Context) AndroidAppHelper.currentApplication();
+                Log.e("WTKLV","ORIGINAL"+context.getPackageName());
+                /*Context context = (Context) getObjectField(param.thisObject, "mContext");
+                String appName = context.getPackageManager().getApplicationInfo(loadPackageParam.packageName, 0).loadLabel(context.getPackageManager()).toString();
+                Resources modRes = context.getPackageManager().getResourcesForApplication("com.athul.nightwing");
+                String replacement = modRes.getString(modRes.getIdentifier("notification_hidden_by_maxlock", "string", "com.athul.nightwing"));
+                Notification.Builder b = new Notification.Builder(context).setContentTitle(appName).setContentText(replacement);
+                notification.contentView = b.build().contentView;
+                notification.bigContentView = null;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
+                    notification.headsUpContentView = null;
+                notification.tickerText = replacement;
+                Intent notificationIntent = new Intent(context, Splash.class);
+                PendingIntent contentIntent = PendingIntent.getActivity(context.getApplicationContext(), 0, notificationIntent, 0);
+
+                ((Notification)param.args[2]).contentIntent=contentIntent;
+                //((Notification)param.args[2]).contentView=null; */
+
+            }
+
+        });
+
 
         XposedHelpers.findAndHookMethod("com.android.providers.downloads.DownloadThread", loadPackageParam.classLoader,
                 "executeDownload", new XC_MethodHook() {
@@ -246,21 +293,32 @@ public class Utils {
                         int i=0;
                         Object fieldValue = XposedHelpers.getObjectField(param.thisObject, "mInfoDelta");
                         Object uri= XposedHelpers.getObjectField(fieldValue, "mUri");
-
                         URL urlNew=new URL((String) uri);
+
+                        try{
+                            Object downloadInfo = XposedHelpers.getObjectField(param.thisObject, "mInfo");
+                            Log.e("WTKLV",fieldValue.toString());
+                            Log.e("WTKLV",urlNew.toString());
+                        }catch (Exception e){
+                            Log.e("WTKLV",e.getLocalizedMessage());
+                        }
+
 
                         if((urlNew.toString().contains("play.googleapis.com/market/download"))) {
 
                             if(urlNew.toString().contains("me.entri.entrime")||
                                     urlNew.toString().contains("com.google.android.gms")||
                                     urlNew.toString().contains("com.android.vending")){
+                                Log.e("WTKLV","ENTRI APP IS DOWNLOADING");
                                 packageDownloadHook("entri");
                             }else {
+                                Log.e("WTKLV","BLOCK APP IS DOWNLOADING");
                                 packageDownloadHook("block");
                             }
 
 
                           }else {
+                            Log.e("WTKLV","NORMAL APP IS DOWNLOADING");
                             packageDownloadHook("normal");
                         }
 
@@ -766,5 +824,23 @@ public class Utils {
 
             }
         });
+    }
+
+    public static void playStoreHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+
+        try {
+            Field f = loadPackageParam.classLoader.getClass().getDeclaredField("classes");
+            f.setAccessible(true);
+
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            Vector<Class> classes =  (Vector<Class>) f.get(classLoader);
+            for (Class classFile:classes){
+                Log.e("WTKLV",classFile.getName());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }
