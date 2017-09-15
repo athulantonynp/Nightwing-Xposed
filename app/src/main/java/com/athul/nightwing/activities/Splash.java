@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -31,44 +32,46 @@ import java.util.List;
 
 public class Splash extends AppCompatActivity {
 
-    Button btn;
+    Button btn,btn2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-        SubsamplingScaleImageView photoView = (SubsamplingScaleImageView) findViewById(R.id.photo_view);
-        //photoView.setImageResource(R.drawable.image);
-        photoView.setImage(ImageSource.resource(R.drawable.image2));
+        btn=(Button)findViewById(R.id.btn);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getLauncherName();
+            }
+        });
+        btn2=(Button)findViewById(R.id.btn2);
+        btn2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clear();
+            }
+        });
     }
 
     private void getLauncherName() {
+        SharedPreferences sharedpreferences = getSharedPreferences("my", Context.MODE_WORLD_READABLE);
 
-        /*File[] storages = ContextCompat.getExternalFilesDirs(this, null);
-        Log.e("WTKLV",String.valueOf(storages.length));
-        for(File file: storages){
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putBoolean("unlock",true);
+        editor.apply();
+        editor.commit();
+        Log.e("WTKLV","UNLOCK");
 
-            Log.e("WTKLV",file.getParent().toString());
-        }
-        if (storages.length > 1 && storages[0] != null && storages[1] != null)
-            Log.e("WTKLV","EXTERNAL");
-        else
-            Log.e("WTKLV","INTERNAL");*/
+    }
+    private  void clear(){
+        SharedPreferences sharedpreferences = getSharedPreferences("my", Context.MODE_WORLD_READABLE);
 
-        Notification n  = new Notification.Builder(this)
-                .setContentTitle("New mail from " + "test@gmail.com")
-                .setContentText("Subject")
-                .setSmallIcon(R.drawable.drawer)
-                .setAutoCancel(true)
-                .build();
-
-
-
-        NotificationManager notificationManager =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-
-        notificationManager.notify(0, n);
-
+        SharedPreferences.Editor editor = sharedpreferences.edit();
+        editor.putBoolean("unlock",false);
+        editor.apply();
+        editor.commit();
+        Log.e("WTKLV","LOCK");
     }
 
 

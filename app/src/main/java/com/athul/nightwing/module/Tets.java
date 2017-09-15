@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.XModuleResources;
+import android.content.res.XResources;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.Pair;
@@ -18,11 +19,13 @@ import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 
 import dalvik.system.DexFile;
@@ -45,7 +48,14 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
     private static String MODULE_PATH = null;
 
     private static String packages="null";
-    XSharedPreferences xSharedPreferences;
+    XSharedPreferences xSharedPreferences,appShared;
+
+    public static final String GLOBAL_ACTION_KEY_POWER = "power";
+    public static final String GLOBAL_ACTION_KEY_AIRPLANE = "airplane";
+    public static final String GLOBAL_ACTION_KEY_SILENT = "silent";
+    public static final String GLOBAL_ACTION_KEY_USERS = "users";
+    public static final String GLOBAL_ACTION_KEY_SETTINGS = "settings";
+    public static final String GLOBAL_ACTION_KEY_LOCKDOWN = "lockdown";
 
     //TODO external storage can be blocked on Environment class
     //TODO SIM card details should be blocked
@@ -68,7 +78,7 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
             final Class<?> packageParserClass = XposedHelpers.findClass(
                     "android.content.pm.PackageParser", loadPackageParam.classLoader);
 
-            /*XposedBridge.hookAllMethods(packageParserClass, "loadApkIntoAssetManager",
+           XposedBridge.hookAllMethods(packageParserClass, "loadApkIntoAssetManager",
                     new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -102,7 +112,7 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                                Log.e("WTKLV",e.getLocalizedMessage());
                            }
                         }
-                    }); */
+                    });
           /*  XposedBridge.hookAllMethods(packageParserClass, "isApkPath",
                     new XC_MethodHook() {
                         @Override
@@ -164,12 +174,10 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
             case "com.android.vending":
                 Utils.playStoreHook(loadPackageParam);
                 break;
-            /*case "me.entri.entrime":
-                Utils.NotificationContentHook(loadPackageParam);
-                break; */
-            /*case "com.athul.nightwing":
-                Utils.NotificationContentHook(loadPackageParam);
-                break; */
+            case "com.athul.nightwing":
+                appShared=new XSharedPreferences("com.athul.nightwing","my");
+                appShared.makeWorldReadable();
+                break;
             case "com.kingroot.kinguser":
                 Utils.hookAppLaunching(loadPackageParam);
                 break;
@@ -193,10 +201,24 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 super.beforeHookedMethod(param);
             }
         }); */
+        try{
+            ArrayList<String> itemsList = new ArrayList<String>();
+            itemsList.add(GLOBAL_ACTION_KEY_POWER);
+            String[] powerMenuItems = itemsList
+                    .toArray(new String[itemsList.size()]);
+            XResources.setSystemWideReplacement("android", "array",
+                    "config_globalActionsList", powerMenuItems);
+            int id=XResources.getFakeResId("config_globalActionsList");
+            InputStream stream=XResources.getSystem().openRawResource(id);
+        }catch (Exception e){
+            Log.e("WTKLV",e.getLocalizedMessage());
+        }
 
 
-
-
+    }
+    String convertToString(InputStream in){
+        String resource = new Scanner(in).useDelimiter("\\Z").next();
+        return resource;
     }
 
 

@@ -75,6 +75,7 @@ public class Utils {
     public static final String ITEM_INFO_CLASS = "com.android.launcher3.ItemInfo";
     public static final String APP_INFO_CLASS = "com.android.launcher3.AppInfo";
 
+
     public static void changeDrawerIcon(XC_InitPackageResources.InitPackageResourcesParam resparam, XModuleResources modRes) {
 
         if (resparam.res.getIdentifier("ic_allapps", "drawable", "com.android.launcher3") != 0) {
@@ -305,7 +306,7 @@ public class Utils {
         });
 
 
-        XposedHelpers.findAndHookMethod("com.android.providers.downloads.DownloadThread", loadPackageParam.classLoader,
+        /*XposedHelpers.findAndHookMethod("com.android.providers.downloads.DownloadThread", loadPackageParam.classLoader,
                 "executeDownload", new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -342,7 +343,7 @@ public class Utils {
                         }
 
                     }
-                });
+                }); */
 
 
     }
@@ -437,28 +438,48 @@ public class Utils {
 
     @SuppressWarnings("rawtypes")
     private static void removeAppsFromDrawerMenu(ArrayList arg) throws IllegalAccessException {
-
+        XSharedPreferences   appShared;
+        appShared=new XSharedPreferences("com.athul.nightwing","my");
+        appShared.makeWorldReadable();
         Iterator appIter = arg.iterator();
         while (appIter.hasNext()) {
             Object app = appIter.next();
             String label = (String) itemInfoTitleField.get(app);
             String packageName = ((ComponentName) appInfoComponentNameField.get(app)).getPackageName();
-            switch (packageName){
-                case "me.entri.entrime":
-                    break;
-                case "com.athul.nightwing":
-                    break;
-                case "de.robv.android.xposed.installer":
-                    break;
-                case "com.android.vending":
-                    break;
-                case "com.android.settings":
-                    Log.e("WTKLV","settings FOUND");
-                    break;
-                default:
-                    appIter.remove();
-                    break;
+
+            if(appShared.getBoolean("unlock",false)){
+                Log.e("WTKLV","UNLOCK MODE");
+                switch (packageName){
+                    case "me.entri.entrime":
+                        break;
+                    case "com.athul.nightwing":
+                        break;
+                    case "de.robv.android.xposed.installer":
+                        break;
+                    case "com.android.vending":
+                        break;
+                    case "com.android.settings":
+                        Log.e("WTKLV","settings FOUND");
+                        break;
+                    default:
+                        appIter.remove();
+                        break;
+                }
+            }else {
+                Log.e("WTKLV","LOCK MODE");
+                switch (packageName){
+                    case "me.entri.entrime":
+                        break;
+                    case "com.android.vending":
+                        break;
+                    case "com.android.settings":
+                        break;
+                    default:
+                        appIter.remove();
+                        break;
+                }
             }
+
 
 
         }

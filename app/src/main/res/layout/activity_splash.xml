@@ -5,8 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.athul.nightwing.activities.Splash">
-    <com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
-        android:id="@+id/photo_view"
+    <Button
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:id="@+id/btn"
+        android:text="Click"
+        android:layout_height="wrap_content" />
+    <Button
+        android:layout_width="match_parent"
+        android:id="@+id/btn2"
+        android:layout_below="@+id/btn"
+        android:text="Click"
+        android:layout_height="wrap_content" />
 </RelativeLayout>
