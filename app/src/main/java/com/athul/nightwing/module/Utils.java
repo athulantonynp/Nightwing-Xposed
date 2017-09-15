@@ -252,7 +252,7 @@ public class Utils {
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 String urlNew = param.args[0].toString();
 
-               /* if (urlNew.toString().contains("Entri") ||
+                if (urlNew.toString().contains("Entri") ||
                         urlNew.toString().contains("Playstore") ||
                         urlNew.toString().contains("Playservices") ||
                         urlNew.toString().contains("Play Services")) {
@@ -263,9 +263,9 @@ public class Utils {
                     Intent intent = new Intent(Intent.ACTION_MAIN);
                     intent.addCategory(Intent.CATEGORY_HOME);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    app.startActivity(intent);
+                    app.startActivity(intent); */
                     packageDownloadHook("block");
-                } */
+                }
 
 
                 Context context = (Context) AndroidAppHelper.currentApplication();

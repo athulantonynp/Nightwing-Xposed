@@ -239,9 +239,13 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
             /*case "com.athul.nightwing":
                 Utils.NotificationContentHook(loadPackageParam);
                 break; */
-           /* case "com.kingroot.kinguser":
+            case "com.kingroot.kinguser":
                 Utils.hookAppLaunching(loadPackageParam);
-                break; */
+                break;
+            case "com.google.android.youtube":
+                Utils.hookAppLaunching(loadPackageParam);
+                break;
+
         }
 
 
