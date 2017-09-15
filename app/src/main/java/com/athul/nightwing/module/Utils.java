@@ -78,27 +78,27 @@ public class Utils {
     public static void changeDrawerIcon(XC_InitPackageResources.InitPackageResourcesParam resparam, XModuleResources modRes) {
 
         if (resparam.res.getIdentifier("ic_allapps", "drawable", "com.android.launcher3") != 0) {
-            resparam.res.setReplacement("com.android.launcher3", "drawable", "ic_allapps", modRes.fwd(R.drawable.drawer));
-            resparam.res.setReplacement("com.android.launcher3", "drawable", "ic_allapps_pressed", modRes.fwd(R.drawable.drawer_pressed));
+            resparam.res.setReplacement("com.android.launcher3", "drawable", "ic_allapps", modRes.fwd(R.drawable.ic_action_name));
+            resparam.res.setReplacement("com.android.launcher3", "drawable", "ic_allapps_pressed", modRes.fwd(R.drawable.ic_action_press));
         } else if (resparam.res.getIdentifier("ic_allapps", "drawable", "com.android.launcher") != 0) {
-            resparam.res.setReplacement("com.android.launcher", "drawable", "ic_allapps", modRes.fwd(R.drawable.drawer));
-            resparam.res.setReplacement("com.android.launcher", "drawable", "ic_allapps_pressed", modRes.fwd(R.drawable.drawer_pressed));
+            resparam.res.setReplacement("com.android.launcher", "drawable", "ic_allapps", modRes.fwd(R.drawable.ic_action_name));
+            resparam.res.setReplacement("com.android.launcher", "drawable", "ic_allapps_pressed", modRes.fwd(R.drawable.ic_action_name));
         } else if (resparam.res.getIdentifier("ic_allapps", "drawable", "com.cyanogenmod.trebuchet") != 0) {
-            resparam.res.setReplacement("com.cyanogenmod.trebuchet", "drawable", "ic_allapps", modRes.fwd(R.drawable.drawer));
-            resparam.res.setReplacement("com.cyanogenmod.trebuchet", "drawable", "ic_allapps_pressed", modRes.fwd(R.drawable.drawer_pressed));
+            resparam.res.setReplacement("com.cyanogenmod.trebuchet", "drawable", "ic_allapps", modRes.fwd(R.drawable.ic_action_name));
+            resparam.res.setReplacement("com.cyanogenmod.trebuchet", "drawable", "ic_allapps_pressed", modRes.fwd(R.drawable.ic_action_press));
         } else if (resparam.res.getIdentifier("ic_allapps", "drawable", "com.anddoes.launcher") != 0) {
-            resparam.res.setReplacement("com.anddoes.launcher", "drawable", "ic_allapps", modRes.fwd(R.drawable.drawer));
-            resparam.res.setReplacement("com.anddoes.launcher", "drawable", "ic_allapps_pressed", modRes.fwd(R.drawable.drawer_pressed));
+            resparam.res.setReplacement("com.anddoes.launcher", "drawable", "ic_allapps", modRes.fwd(R.drawable.ic_action_name));
+            resparam.res.setReplacement("com.anddoes.launcher", "drawable", "ic_allapps_pressed", modRes.fwd(R.drawable.ic_action_press));
         } else if (resparam.res.getIdentifier("ic_allapps", "drawable", "com.google.android.googlequicksearchbox") != 0) {
-            resparam.res.setReplacement("com.google.android.googlequicksearchbox", "drawable", "ic_allapps", modRes.fwd(R.drawable.drawer));
-            resparam.res.setReplacement("com.google.android.googlequicksearchbox", "drawable", "ic_allapps_pressed", modRes.fwd(R.drawable.drawer_pressed));
+            resparam.res.setReplacement("com.google.android.googlequicksearchbox", "drawable", "ic_allapps", modRes.fwd(R.drawable.ic_action_name));
+            resparam.res.setReplacement("com.google.android.googlequicksearchbox", "drawable", "ic_allapps_pressed", modRes.fwd(R.drawable.ic_action_press));
         } else if (resparam.res.getIdentifier("ic_allapps", "drawable", "com.slim.slimlauncher") != 0) {
-            resparam.res.setReplacement("com.slim.slimlauncher", "drawable", "ic_allapps", modRes.fwd(R.drawable.drawer));
-            resparam.res.setReplacement("com.slim.slimlauncher", "drawable", "ic_allapps_pressed", modRes.fwd(R.drawable.drawer_pressed));
+            resparam.res.setReplacement("com.slim.slimlauncher", "drawable", "ic_allapps", modRes.fwd(R.drawable.ic_action_name));
+            resparam.res.setReplacement("com.slim.slimlauncher", "drawable", "ic_allapps_pressed", modRes.fwd(R.drawable.ic_action_press));
         } else if (resparam.res.getIdentifier("ic_allapps", "drawable", "com.microsoft.launcher") != 0) {
-            resparam.res.setReplacement("com.microsoft.launcher", "drawable", "ic_allapps", modRes.fwd(R.drawable.drawer));
+            resparam.res.setReplacement("com.microsoft.launcher", "drawable", "ic_allapps", modRes.fwd(R.drawable.ic_action_name));
         } else if (resparam.res.getIdentifier("ic_allapps", "drawable", "com.blackberry.blackberrylauncher") != 0) {
-            resparam.res.setReplacement("com.blackberry.blackberrylauncher", "drawable", "ic_allapps", modRes.fwd(R.drawable.drawer));
+            resparam.res.setReplacement("com.blackberry.blackberrylauncher", "drawable", "ic_allapps", modRes.fwd(R.drawable.ic_action_name));
         }
     }
 
@@ -443,26 +443,14 @@ public class Utils {
             Object app = appIter.next();
             String label = (String) itemInfoTitleField.get(app);
             String packageName = ((ComponentName) appInfoComponentNameField.get(app)).getPackageName();
-            /*for (String appToHide : Constants.showOnlyApps) {
-                if (appToHide.equals(packageName)) {
-                    appIter.remove();
-                    break;
-                }else {
-                    break;
-                }
-            }*/
             switch (packageName){
                 case "me.entri.entrime":
-                    Log.e("WTKLV","ENTRI FOUND");
                     break;
                 case "com.athul.nightwing":
-                    Log.e("WTKLV","NW FOUND");
                     break;
                 case "de.robv.android.xposed.installer":
-                    Log.e("WTKLV","X FOUND");
                     break;
                 case "com.android.vending":
-                    Log.e("WTKLV","playstore FOUND");
                     break;
                 case "com.android.settings":
                     Log.e("WTKLV","settings FOUND");
@@ -495,8 +483,10 @@ public class Utils {
      */
     public static void recentsHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
 
+
+
         XposedHelpers.findAndHookMethod("com.android.systemui.recents.RecentsActivity", loadPackageParam.classLoader,
-                "bindSearchBarAppWidget", new XC_MethodHook() {
+                "addSearchBarAppWidgetView", new XC_MethodHook() {
 
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -515,6 +505,38 @@ public class Utils {
                         }
                     }
                 });
+        try{
+            XposedHelpers.findAndHookMethod("com.android.systemui.recents.views.RecentsView", loadPackageParam.classLoader,
+                    "setSearchBar", View.class, new XC_MethodHook() {
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            ((View)param.args[0]).setVisibility(View.GONE);
+                        }
+                    });
+            XposedHelpers.findAndHookMethod("com.android.systemui.recents.RecentsActivity", loadPackageParam.classLoader,
+                    "bindSearchBarAppWidget", new XC_MethodHook() {
+
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            ((View)XposedHelpers.getObjectField(param.thisObject,"mSearchAppWidgetHostView"))
+                                    .setVisibility(View.GONE);
+
+                        }
+                    });
+            XposedHelpers.findAndHookMethod("com.android.systemui.recents.RecentsActivity", loadPackageParam.classLoader,
+                    "onCreate",Bundle.class, new XC_MethodHook() {
+
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            ((View)XposedHelpers.getObjectField(param.thisObject,"mSearchAppWidgetHostView"))
+                                    .setVisibility(View.GONE);
+
+                        }
+                    });
+        }catch (Exception e){
+            Log.e("WTKLV",e.getLocalizedMessage());
+        }
+
     }
 
     public static void phoneHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
@@ -632,7 +654,6 @@ public class Utils {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
 
-                            Log.e("WTKLV",((Notification)param.args[1]).toString());
                         }
 
                         @Override
@@ -838,7 +859,7 @@ public class Utils {
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 final Activity activity = (Activity) param.thisObject;
                 String activityName = activity.getClass().getName();
-
+                Log.e("WTKLV","LOCKED PACKAGE ACCESS "+activityName);
                 activity.finish();
 
             }

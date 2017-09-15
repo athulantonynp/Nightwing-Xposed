@@ -67,76 +67,8 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
         if(loadPackageParam.packageName.equals("android")&&loadPackageParam.processName.equals("android")){
             final Class<?> packageParserClass = XposedHelpers.findClass(
                     "android.content.pm.PackageParser", loadPackageParam.classLoader);
-            final Class<?> verification = XposedHelpers.findClass(
-                    "android.content.pm.VerificationParams", loadPackageParam.classLoader);
 
-            XposedBridge.hookAllMethods(verification, "getManifestDigest", new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    Object fieldValue = XposedHelpers.getObjectField(param.thisObject, "mManifestDigest");
-                    try{
-                        Pair pair=(Pair)fieldValue;
-
-                    }catch (Exception e){
-
-                    }
-
-
-                }
-            });
-            final Class<?> packageInstaller = XposedHelpers.findClass(
-                    "android.content.pm.PackageInstaller", loadPackageParam.classLoader);
-
-            XposedBridge.hookAllMethods(packageInstaller, "createSession", new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    Log.e("WTKLV","INSTALL SESSION IS CREATED");
-                    super.beforeHookedMethod(param);
-                }
-
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    super.afterHookedMethod(param);
-                }
-            });
-            XposedBridge.hookAllMethods(packageParserClass, "parseClusterPackage", new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-
-                }
-            });
-            XposedBridge.hookAllMethods(packageParserClass, "parseMonolithicPackage", new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-
-                }
-            });
-            XposedBridge.hookAllMethods(packageParserClass, "parsePackageSplitNames", new XC_MethodHook() {
-                @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-
-                }
-
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-
-                }
-            });
-
-           XposedBridge.hookAllMethods(packageParserClass, "parseBaseApk",
-                    new XC_MethodHook() {
-                        @Override
-                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-
-
-                        }
-
-                        @Override
-                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-
-                        }
-                    });
-            XposedBridge.hookAllMethods(packageParserClass, "loadApkIntoAssetManager",
+            /*XposedBridge.hookAllMethods(packageParserClass, "loadApkIntoAssetManager",
                     new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -170,7 +102,7 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                                Log.e("WTKLV",e.getLocalizedMessage());
                            }
                         }
-                    });
+                    }); */
           /*  XposedBridge.hookAllMethods(packageParserClass, "isApkPath",
                     new XC_MethodHook() {
                         @Override
@@ -230,7 +162,6 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 xSharedPreferences.makeWorldReadable();
                 break;
             case "com.android.vending":
-                Log.e("WTKLV","PLAYSTORE FOUND");
                 Utils.playStoreHook(loadPackageParam);
                 break;
             /*case "me.entri.entrime":
