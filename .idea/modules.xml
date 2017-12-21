@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Nightwing.iml" filepath="$PROJECT_DIR$/Nightwing.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Nightwing-Xposed.iml" filepath="$PROJECT_DIR$/Nightwing-Xposed.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

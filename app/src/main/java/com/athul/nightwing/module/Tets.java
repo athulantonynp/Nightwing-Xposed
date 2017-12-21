@@ -73,7 +73,7 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
 
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
-
+        //TODO
         if(loadPackageParam.packageName.equals("android")&&loadPackageParam.processName.equals("android")){
             final Class<?> packageParserClass = XposedHelpers.findClass(
                     "android.content.pm.PackageParser", loadPackageParam.classLoader);
@@ -113,20 +113,6 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                            }
                         }
                     });
-          /*  XposedBridge.hookAllMethods(packageParserClass, "isApkPath",
-                    new XC_MethodHook() {
-                        @Override
-                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-
-                            Log.e("WTKLV",param.args[0].toString());
-                        }
-
-                        @Override
-                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-
-                        }
-                    }); */
-
         }
 
 

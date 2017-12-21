@@ -904,4 +904,14 @@ public class Utils {
         }
 
     }
+
+
+    public  boolean belowLollipop(){
+
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            return true;
+        }else {
+            return false;
+        }
+    }
 }
