@@ -33,5 +33,5 @@ dependencies {
     compile 'com.github.chrisbanes:PhotoView:2.0.0'
     compile 'com.davemorrissey.labs:subsampling-scale-image-view:3.6.0'
     testCompile 'junit:junit:4.12'
-    provided 'de.robv.android.xposed:api:82'
+    provided 'de.robv.android.xposed:api:53'
 }

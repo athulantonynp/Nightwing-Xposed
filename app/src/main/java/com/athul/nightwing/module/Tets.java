@@ -113,11 +113,19 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                            }
                         }
                     });
-        }
+        } */
 
 
         switch (loadPackageParam.packageName){
-            case "android":
+
+            case "com.android.launcher3":
+                Utils.gsbHook(loadPackageParam);
+                //Utils.launcherHook(loadPackageParam);
+                break;
+            case "com.android.settings":
+                Utils.removeFieldsFromSettings(loadPackageParam,loadPackageParam.classLoader);
+                break;
+          /*  case "android":
                 Utils.notificationHook(loadPackageParam);
                 Utils.USBMenuHook(loadPackageParam);
                 break;
@@ -130,10 +138,7 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
             case "com.android.providers.downloads":
                 Utils.newDownloadHook(loadPackageParam);
                 break;
-            case "com.android.launcher3":
-                Utils.gsbHook(loadPackageParam);
-                Utils.launcherHook(loadPackageParam);
-                break;
+
             case "com.android.systemui":
                 Utils.recentsHook(loadPackageParam);
                 break;
@@ -169,9 +174,9 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 break;
             case "com.google.android.youtube":
                 Utils.hookAppLaunching(loadPackageParam);
-                break;
+                break; */
 
-        } */
+        }
 
 
     }

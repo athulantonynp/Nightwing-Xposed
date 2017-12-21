@@ -35,6 +35,7 @@ import android.widget.RemoteViews;
 
 import com.athul.nightwing.R;
 import com.athul.nightwing.activities.Splash;
+import com.google.gson.Gson;
 
 
 import java.io.File;
@@ -46,11 +47,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XSharedPreferences;
@@ -106,73 +109,38 @@ public class Utils {
     public static void removeFieldsFromSettings(final XC_LoadPackage.LoadPackageParam loadPackageParam, ClassLoader classLoader) {
        /* XposedHelpers.findAndHookMethod("com.android.settings.SettingsActivity", loadPackageParam.classLoader, "loadCategoriesFromResource",  int.class,List.class,
                 }); */
+        try{
+            XposedHelpers.findAndHookMethod("com.android.settings.Settings", loadPackageParam.classLoader, "updateHeaderList",List.class,
+                    new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
 
-       XposedHelpers.findAndHookMethod("com.android.settings.SettingsActivity", loadPackageParam.classLoader, "onCreate",Bundle.class,
-               new XC_MethodHook() {
-                   @Override
-                   protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                      /* Activity act = (Activity)param.thisObject;
-                       act.finish(); */
-                       XposedHelpers.setBooleanField(param.thisObject,"mDisplaySearch",false);
+                            List<Object> objects=new ArrayList<>();
+                            for (int i=0;i<((List)param.args[0]).size();i++){
 
-                   }
+                                String call=new Gson().toJson(((List)param.args[0]).get(i));
+                                if(call.contains("WifiSettings")||call.contains("AudioProfileSettings")
+                                        ||call.contains("DisplaySettings")||call.contains("LocationSettings")){
+                                    objects.add(((List)param.args[0]).get(i));
+                                }
 
-                   @Override
-                   protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-
-                       XposedHelpers.setBooleanField(param.thisObject,"mDisplaySearch",false);
-                   }
-               }
-
-
-
-       );
-        XposedHelpers.findAndHookMethod("com.android.settings.SettingsActivity", loadPackageParam.classLoader, "updateTilesList",List.class,
-                new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                      /* Activity act = (Activity)param.thisObject;
-                       act.finish(); */
-                        ((List)param.args[0]).remove(3);
-                    }
-
-                }
-
-
-        );
-        XposedHelpers.findAndHookMethod("com.android.settings.dashboard.DashboardCategory", loadPackageParam.classLoader,
-                "getTile",int.class,
-                new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                      /* Activity act = (Activity)param.thisObject;
-                       act.finish(); */
-
-                        if(((int)param.args[0])!=0){
-                           param.args[0]=0;
+                            }
+                            ((List)param.args[0]).clear();
+                            ((List)param.args[0]).addAll(objects);
+                        Log.e("WTKLV",String.valueOf(new Gson().toJson(param.args[0])));
                         }
-                    }
 
-                }
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
 
+                        }
+                    }       );
+        }catch (Exception e){
+            for (int i=0;i<=100;i++){
+                Log.e("WTKLV","SETTINGS NOT FOUND"+ e.getLocalizedMessage());
+            }
 
-
-        );
-        XposedHelpers.findAndHookMethod("com.android.settings.dashboard.DashboardCategory", loadPackageParam.classLoader,
-                "getTilesCount", new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-
-                        param.setResult(1);
-                    }
-
-                }
-
-
-
-        );
-
-
+        }
 
     }
 
