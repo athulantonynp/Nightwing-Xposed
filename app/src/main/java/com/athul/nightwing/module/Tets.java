@@ -120,21 +120,30 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
 
             case "com.android.launcher3":
                 Utils.gsbHook(loadPackageParam);
-                //Utils.launcherHook(loadPackageParam);
+                Utils.launcherHook(loadPackageParam);
                 break;
             case "com.android.settings":
                 Utils.removeFieldsFromSettings(loadPackageParam,loadPackageParam.classLoader);
                 break;
+
+            case "com.kingroot.kinguser":
+                Utils.hookAppLaunching(loadPackageParam);
+                break;
+
+            case "com.android.packageinstaller":
+                Utils.restrictAppUninstallation(loadPackageParam);
+                break;
+
+            case "com.google.android.youtube":
+                Utils.hookAppLaunching(loadPackageParam);
+                break;
+
           /*  case "android":
                 Utils.notificationHook(loadPackageParam);
                 Utils.USBMenuHook(loadPackageParam);
                 break;
-            case "com.android.settings":
-                Utils.removeFieldsFromSettings(loadPackageParam,loadPackageParam.classLoader);
-                break;
-            case "com.android.packageinstaller":
-               Utils.restrictAppUninstallation(loadPackageParam);
-                break;
+
+
             case "com.android.providers.downloads":
                 Utils.newDownloadHook(loadPackageParam);
                 break;
@@ -169,12 +178,8 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 appShared=new XSharedPreferences("com.athul.nightwing","my");
                 appShared.makeWorldReadable();
                 break;
-            case "com.kingroot.kinguser":
-                Utils.hookAppLaunching(loadPackageParam);
-                break;
-            case "com.google.android.youtube":
-                Utils.hookAppLaunching(loadPackageParam);
-                break; */
+
+           */
 
         }
 
