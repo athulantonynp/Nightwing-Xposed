@@ -74,7 +74,7 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
         //TODO
-        if(loadPackageParam.packageName.equals("android")&&loadPackageParam.processName.equals("android")){
+        /*if(loadPackageParam.packageName.equals("android")&&loadPackageParam.processName.equals("android")){
             final Class<?> packageParserClass = XposedHelpers.findClass(
                     "android.content.pm.PackageParser", loadPackageParam.classLoader);
 
@@ -171,7 +171,7 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 Utils.hookAppLaunching(loadPackageParam);
                 break;
 
-        }
+        } */
 
 
     }
@@ -187,7 +187,9 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 super.beforeHookedMethod(param);
             }
         }); */
-        try{
+
+        //TODO
+        /*try{
             ArrayList<String> itemsList = new ArrayList<String>();
             itemsList.add(GLOBAL_ACTION_KEY_POWER);
             String[] powerMenuItems = itemsList
@@ -198,7 +200,7 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
             InputStream stream=XResources.getSystem().openRawResource(id);
         }catch (Exception e){
             Log.e("WTKLV",e.getLocalizedMessage());
-        }
+        } */
 
 
     }
