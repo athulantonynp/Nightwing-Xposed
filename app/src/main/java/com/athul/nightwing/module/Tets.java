@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.content.res.XModuleResources;
 import android.content.res.XResources;
 import android.support.annotation.Nullable;
@@ -74,16 +75,17 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
         //TODO
-        /*if(loadPackageParam.packageName.equals("android")&&loadPackageParam.processName.equals("android")){
+        if(loadPackageParam.packageName.equals("android")&&loadPackageParam.processName.equals("android")){
             final Class<?> packageParserClass = XposedHelpers.findClass(
                     "android.content.pm.PackageParser", loadPackageParam.classLoader);
 
-           XposedBridge.hookAllMethods(packageParserClass, "loadApkIntoAssetManager",
+          /* XposedBridge.hookAllMethods(packageParserClass, "loadApkIntoAssetManager",
                     new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
 
                            try{
+                               Log.e("WTKLV","CHECK FOR TMP");
                                if(param.args[1].toString().contains(".tmp")){
 
                                    xSharedPreferences=new XSharedPreferences("com.android.providers.media",Constants.sharedPreferenceName);
@@ -112,8 +114,54 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                                Log.e("WTKLV",e.getLocalizedMessage());
                            }
                         }
-                    });
-        } */
+                    }); */
+
+          XposedBridge.hookAllMethods(packageParserClass, "parsePackage", new XC_MethodHook() {
+              @Override
+              protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                  try {
+                      if (param.args[0] instanceof File){
+                          if(((File)param.args[0]).getAbsolutePath().endsWith(".tmp")){
+                              xSharedPreferences=new XSharedPreferences("com.android.providers.downloads",Constants.sharedPreferenceName);
+                              xSharedPreferences.makeWorldReadable();
+                              if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("block")){
+                                  param.args[2]=0;
+                                  param.args[0]=null;
+                                  param.args[1]="podaa";
+                                  Log.e("WTKLV","BLOCK FOUND");
+                              }
+                              if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("normal")){
+                                  param.args[2]=0;
+                                  param.args[0]=null;
+                                  param.args[1]="podaa";
+                                  Log.e("WTKLV","NORMAL FOUND");
+                              }
+                              if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("error")){
+                                  param.args[2]=0;
+                                  param.args[0]=null;
+                                  param.args[1]="podaa";
+                                  Log.e("WTKLV","ERROR FOUND");
+                              }
+                              if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("entri")){
+                                  Log.e("WTKLV","ALLOWED APP FOUND");
+                              }
+                          }
+                      }
+
+                  }catch (Exception e){
+                      Log.e("WTKLV",e.getMessage());
+                  }
+
+                  super.beforeHookedMethod(param);
+              }
+
+              @Override
+              protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                  super.afterHookedMethod(param);
+              }
+          });
+
+        }
 
 
         switch (loadPackageParam.packageName){
@@ -138,45 +186,56 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 Utils.hookAppLaunching(loadPackageParam);
                 break;
 
-          /*  case "android":
-                Utils.notificationHook(loadPackageParam);
-                Utils.USBMenuHook(loadPackageParam);
+           case "android":
+               Utils.USBMenuHook(loadPackageParam);
                 break;
 
 
-            case "com.android.providers.downloads":
-                Utils.newDownloadHook(loadPackageParam);
-                break;
 
-            case "com.android.systemui":
-                Utils.recentsHook(loadPackageParam);
-                break;
             case "com.android.dialer":
                 Utils.phoneHook(loadPackageParam);
                 break;
+
             case "com.android.incallui":
                 //TODO this package needs a revision
                 Utils.inCallHook(loadPackageParam);
                 break;
-            case "com.android.contacts":
-                Utils.contactsHook(loadPackageParam);
-                break;
+
             case "com.android.phone":
                 Utils.incomingHook(loadPackageParam);
                 break;
+
+            case "com.android.contacts":
+                Utils.contactsHook(loadPackageParam);
+                break;
+
             case "com.android.camera":
                 Utils.cameraAppHook(loadPackageParam);
                 break;
-            case "com.android.providers.media":
-                xSharedPreferences=new XSharedPreferences("com.android.providers.media",Constants.sharedPreferenceName);
-                xSharedPreferences.makeWorldReadable();
+            case "com.android.systemui":
+               // Utils.recentsHook(loadPackageParam);
+                Utils.usbStorageNotificationHook(loadPackageParam);
                 break;
             case "com.android.vending":
                 Utils.playStoreHook(loadPackageParam);
                 break;
+            case "com.android.providers.downloads":
+                Utils.newDownloadHook(loadPackageParam);
+                break;
+
+            case "com.android.providers.media":
+                xSharedPreferences=new XSharedPreferences("com.android.providers.media",Constants.sharedPreferenceName);
+                xSharedPreferences.makeWorldReadable();
+                break;
+
             case "com.athul.nightwing":
                 appShared=new XSharedPreferences("com.athul.nightwing","my");
                 appShared.makeWorldReadable();
+                break;
+
+          /*
+                case "com.athul.nightwing":
+                Utils.notificationHook(loadPackageParam);
                 break;
 
            */
@@ -190,16 +249,9 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
     public void initZygote(StartupParam startupParam) throws Throwable {
         MODULE_PATH = startupParam.modulePath;
 
-        /*XposedBrcom.android.cameraidge.hookAllMethods(DownloadManager.class, "enqueue", new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                Log.e("WTKLV","DOWNLOAD HEADER");
-                super.beforeHookedMethod(param);
-            }
-        }); */
 
         //TODO
-        /*try{
+        try{
             ArrayList<String> itemsList = new ArrayList<String>();
             itemsList.add(GLOBAL_ACTION_KEY_POWER);
             String[] powerMenuItems = itemsList
@@ -210,7 +262,7 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
             InputStream stream=XResources.getSystem().openRawResource(id);
         }catch (Exception e){
             Log.e("WTKLV",e.getLocalizedMessage());
-        } */
+        }
 
 
     }

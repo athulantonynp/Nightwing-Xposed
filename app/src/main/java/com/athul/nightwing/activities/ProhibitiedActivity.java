@@ -17,7 +17,7 @@ public class ProhibitiedActivity extends Activity {
         try {
             getActionBar().hide();
         }catch (Exception e){
-            Log.e("OMKV",e.getMessage());
+            Log.e("WTKLV",e.getMessage());
         }
 
     }

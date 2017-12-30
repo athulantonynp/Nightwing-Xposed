@@ -55,13 +55,23 @@ public class Splash extends AppCompatActivity {
     }
 
     private void getLauncherName() {
-        SharedPreferences sharedpreferences = getSharedPreferences("my", Context.MODE_WORLD_READABLE);
+        /*SharedPreferences sharedpreferences = getSharedPreferences("my", Context.MODE_WORLD_READABLE);
 
         SharedPreferences.Editor editor = sharedpreferences.edit();
         editor.putBoolean("unlock",true);
         editor.apply();
         editor.commit();
-        Log.e("WTKLV","UNLOCK");
+        Log.e("WTKLV","UNLOCK"); */
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.drawer)
+                        .setContentTitle("My notification")
+                        .setContentText("Hello World!");
+
+        NotificationManager mNotifyMgr =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotifyMgr.notify(100, mBuilder.build());
+
 
     }
     private  void clear(){

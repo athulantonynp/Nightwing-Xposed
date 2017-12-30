@@ -1,13 +1,16 @@
 package com.athul.nightwing.module;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AndroidAppHelper;
 import android.app.Application;
 import android.app.DownloadManager;
+import android.app.Fragment;
 import android.app.Instrumentation;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -21,13 +24,17 @@ import android.hardware.Camera;
 import android.hardware.camera2.CameraDevice;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.opengl.Visibility;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcel;
+import android.provider.ContactsContract;
 import android.provider.Settings;
+import android.support.annotation.RequiresApi;
 import android.text.LoginFilter;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -53,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
 import de.robv.android.xposed.XC_MethodHook;
@@ -62,6 +70,8 @@ import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_InitPackageResources;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
+import static android.app.Notification.VISIBILITY_SECRET;
+import static android.view.View.GONE;
 import static de.robv.android.xposed.XposedBridge.log;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
@@ -135,11 +145,142 @@ public class Utils {
 
                         }
                     }       );
-        }catch (Exception e){
 
-        }
+            XposedHelpers.findAndHookMethod("com.android.settings.applications.InstalledAppDetails", loadPackageParam.classLoader,
+                    "onCreateView", LayoutInflater.class,ViewGroup.class,Bundle.class, new XC_MethodHook() {
+                        @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
 
+
+                            try {
+                                /*((Activity) param.thisObject).getActionBar().setDisplayShowHomeEnabled(false);
+                                ((Activity) param.thisObject).getActionBar().setDisplayHomeAsUpEnabled(false);
+                                ((Activity) param.thisObject).getActionBar().setTitle("TITLE"); */
+
+                                ((Fragment) param.thisObject).getActivity().finish();
+
+                            }catch (Exception e){
+                                Log.e("WTKLV",e.getLocalizedMessage());
+                            }
+                            super.beforeHookedMethod(param);
+                        }
+
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+
+
+
+                            param.setResult(null);
+
+                            super.afterHookedMethod(param);
+                        }
+                    });
+
+            XposedHelpers.findAndHookMethod("com.android.settings.applications.ManageApplications", loadPackageParam.classLoader,
+                    "onCreateView", LayoutInflater.class,ViewGroup.class,Bundle.class, new XC_MethodHook() {
+                        @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+
+
+                            try {
+                                /*((Activity) param.thisObject).getActionBar().setDisplayShowHomeEnabled(false);
+                                ((Activity) param.thisObject).getActionBar().setDisplayHomeAsUpEnabled(false);
+                                ((Activity) param.thisObject).getActionBar().setTitle("TITLE"); */
+
+                                ((Fragment) param.thisObject).getActivity().finish();
+
+                            }catch (Exception e){
+                                Log.e("WTKLV",e.getLocalizedMessage());
+                            }
+                            super.beforeHookedMethod(param);
+                        }
+
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+
+
+
+                            param.setResult(null);
+
+                            super.afterHookedMethod(param);
+                        }
+                    });
+            XposedHelpers.findAndHookMethod("com.android.settings.bluetooth.DevicePickerFragment", loadPackageParam.classLoader,
+                    "onCreate", Bundle.class, new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            ((Fragment) param.thisObject).getActivity().finish();
+                            super.beforeHookedMethod(param);
+                        }
+                    });
+            XposedHelpers.findAndHookMethod("com.android.settings.bluetooth.BluetoothPairingService", loadPackageParam.classLoader,
+                    "onStartCommand", Intent.class, int.class, int.class, new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            param.args[0]=null;
+                            param.args[1]=0;
+                            param.args[2]=0;
+                            ((Service) param.thisObject).stopSelf();
+                            super.beforeHookedMethod(param);
+                        }
+
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            super.afterHookedMethod(param);
+                        }
+                    });
+            XposedHelpers.findAndHookMethod("com.android.settings.bluetooth.BluetoothPairingService", loadPackageParam.classLoader,
+                    "onCreate", new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            ((Service) param.thisObject).stopSelf();
+                            super.beforeHookedMethod(param);
+                        }
+
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            super.afterHookedMethod(param);
+                        }
+                    });
+
+
+
+        XposedHelpers.findAndHookMethod("com.android.settings.bluetooth.BluetoothPairingRequest", loadPackageParam.classLoader,
+                "onReceive", Context.class,Intent.class,new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        param.args[0]=null;
+                        param.args[1]=null;
+                        super.beforeHookedMethod(param);
+                    }
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        super.afterHookedMethod(param);
+                    }
+                });
+
+            XposedHelpers.findAndHookMethod("com.android.settings.bluetooth.BluetoothPairingDialogFragment", loadPackageParam.classLoader,
+                    "onCreateDialog", Bundle.class,new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            ((Fragment) param.thisObject).getActivity().finish();
+                            super.beforeHookedMethod(param);
+                        }
+
+                        @Override
+                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                            super.afterHookedMethod(param);
+                        }
+                    });
+
+    }catch (Exception e){
+        Log.e("WTKLV",e.getLocalizedMessage());
     }
+
+}
 
 
     public static void restrictAppUninstallation(final XC_LoadPackage.LoadPackageParam loadPackageParam) {
@@ -218,7 +359,7 @@ public class Utils {
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 String urlNew = param.args[0].toString();
 
-                if (urlNew.toString().contains("Entri") ||
+               if (urlNew.toString().contains("Entri") ||
                         urlNew.toString().contains("Playstore") ||
                         urlNew.toString().contains("Playservices") ||
                         urlNew.toString().contains("Play Services")) {
@@ -229,13 +370,10 @@ public class Utils {
                     Intent intent = new Intent(Intent.ACTION_MAIN);
                     intent.addCategory(Intent.CATEGORY_HOME);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    app.startActivity(intent); */
+                    app.startActivity(intent);*/
                     packageDownloadHook("block");
                 }
 
-
-                Context context = (Context) AndroidAppHelper.currentApplication();
-                Log.e("WTKLV", "ORIGINAL" + context.getPackageName());
                 super.beforeHookedMethod(param);
             }
 
@@ -271,7 +409,7 @@ public class Utils {
         });
 
 
-        /*XposedHelpers.findAndHookMethod("com.android.providers.downloads.DownloadThread", loadPackageParam.classLoader,
+        XposedHelpers.findAndHookMethod("com.android.providers.downloads.DownloadThread", loadPackageParam.classLoader,
                 "executeDownload", new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -288,7 +426,7 @@ public class Utils {
                             Log.e("WTKLV",e.getLocalizedMessage());
                         }
 
-
+                        Log.e("WTKLV","DOWNLOAD :"+urlNew.toString());
                         if((urlNew.toString().contains("play.googleapis.com/market/download"))) {
 
                             if(urlNew.toString().contains("me.entri.entrime")||
@@ -308,7 +446,7 @@ public class Utils {
                         }
 
                     }
-                }); */
+                });
 
 
     }
@@ -317,6 +455,7 @@ public class Utils {
         try{
 
             Context context = (Context) AndroidAppHelper.currentApplication();
+            Log.e("WTKLV","THE PACKAGE IS :"+ context.getPackageName());
             SharedPreferences sharedPreferences=context.getSharedPreferences(Constants.sharedPreferenceName,
                     Context.MODE_WORLD_READABLE);
             SharedPreferences.Editor editor=sharedPreferences.edit();
@@ -476,7 +615,7 @@ public class Utils {
                    @Override
                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                        ((View)XposedHelpers.getObjectField(param.thisObject,"mSearchDropTargetBar"))
-                               .setVisibility(View.GONE);
+                               .setVisibility(GONE);
                    }
                });
     }
@@ -495,7 +634,7 @@ public class Utils {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         ((View)XposedHelpers.getObjectField(param.thisObject,"mSearchAppWidgetHostView"))
-                                .setVisibility(View.GONE);
+                                .setVisibility(GONE);
 
                     }
                 });
@@ -505,7 +644,7 @@ public class Utils {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         if( ((View)XposedHelpers.getObjectField(param.thisObject,"mSearchBar"))!=null){
-                            ((View) XposedHelpers.getObjectField(param.thisObject,"mSearchBar")).setVisibility(View.GONE);
+                            ((View) XposedHelpers.getObjectField(param.thisObject,"mSearchBar")).setVisibility(GONE);
                         }
                     }
                 });
@@ -514,7 +653,7 @@ public class Utils {
                     "setSearchBar", View.class, new XC_MethodHook() {
                         @Override
                         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                            ((View)param.args[0]).setVisibility(View.GONE);
+                            ((View)param.args[0]).setVisibility(GONE);
                         }
                     });
             XposedHelpers.findAndHookMethod("com.android.systemui.recents.RecentsActivity", loadPackageParam.classLoader,
@@ -523,7 +662,7 @@ public class Utils {
                         @Override
                         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                             ((View)XposedHelpers.getObjectField(param.thisObject,"mSearchAppWidgetHostView"))
-                                    .setVisibility(View.GONE);
+                                    .setVisibility(GONE);
 
                         }
                     });
@@ -533,7 +672,7 @@ public class Utils {
                         @Override
                         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                             ((View)XposedHelpers.getObjectField(param.thisObject,"mSearchAppWidgetHostView"))
-                                    .setVisibility(View.GONE);
+                                    .setVisibility(GONE);
 
                         }
                     });
@@ -649,14 +788,61 @@ public class Utils {
                 });
     }
 
-    public static void notificationHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+    public static void notificationHook(final XC_LoadPackage.LoadPackageParam loadPackageParam) {
         final Class<?> traceClass = XposedHelpers.findClass("android.app.NotificationManager", null);
 
-        try{
+
+        findAndHookMethod(NotificationManager.class, "notify", String.class, int.class, Notification.class, new XC_MethodHook() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                Notification notification = (Notification) param.args[2];
+                Context context = (Context) getObjectField(param.thisObject, "mContext");
+
+                String appName = context.getPackageManager().getApplicationInfo(loadPackageParam.packageName, 0).loadLabel(context.getPackageManager()).toString();
+                Resources modRes = context.getPackageManager().getResourcesForApplication("com.athul.nightwing");
+                String replacement = modRes.getString(modRes.getIdentifier("notification_hidden_by_maxlock", "string", "com.athul.nightwing"));
+                Notification.Builder b = new Notification.Builder(context).setContentTitle(appName).setContentText(replacement);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    notification.contentView = b.build().contentView;
+                }
+
+
+                notification.tickerText = replacement;
+                notification.icon=0;
+                notification.sound=null;
+                //notification.visibility= VISIBILITY_SECRET;
+                notification.actions=null;
+                notification.vibrate=null;
+
+                Intent notificationIntent = new Intent(context, Splash.class);
+                PendingIntent contentIntent = PendingIntent.getActivity(context.getApplicationContext(), 0, notificationIntent, 0);
+
+                ((Notification)param.args[2]).contentIntent=contentIntent;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    ((Notification)param.args[2]).contentView=b.build().contentView;
+                }
+
+            }
+
+        });
+
+
+        /*try{
             XposedHelpers.findAndHookMethod("android.app.NotificationManager", loadPackageParam.classLoader,
                     "notify", int.class, Notification.class, new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                           try{
+                               Notification notification=(Notification)param.args[1];
+                               Log.e("WTKLV",String.valueOf(notification.toString()));
+                               Log.e("WTKLV",String.valueOf(notification.tickerText));
+                               Log.e("WTKLV",String.valueOf(notification.contentView.getPackage()));
+                           }catch (Exception e){
+                               Log.e("WTKLV",e.getLocalizedMessage());
+                           }
+
 
                         }
 
@@ -666,7 +852,7 @@ public class Utils {
                         }
                     });
 
-            XposedHelpers.findAndHookMethod("android.provider.Settings.Global", loadPackageParam.classLoader, "getInt", ContentResolver.class, String.class, new XC_MethodHook() {
+           /* XposedHelpers.findAndHookMethod("android.provider.Settings.Global", loadPackageParam.classLoader, "getInt", ContentResolver.class, String.class, new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     XposedBridge.log("hideUSBDebugging: hook Settings.Global.getInt method");
@@ -709,21 +895,49 @@ public class Utils {
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                             Log.e("WTKLV",((Intent)param.args[1]).toString());
                         }
-                    }); */
+                    });
         }catch (Exception e){
             Log.e("WTKLV",e.getLocalizedMessage());
-        }
+        } */
 
     }
 
-    public static void incomingHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
-        XposedHelpers.findAndHookMethod("com.android.phone.CallNotifier", loadPackageParam.classLoader, "onNewRingingConnection",
-                "android.os.AsyncResult", new XC_MethodHook() {
+    public static void incomingHook(final XC_LoadPackage.LoadPackageParam loadPackageParam) {
+
+        XposedBridge.hookAllMethods(XposedHelpers.findClass("com.android.phone.CallNotifier", loadPackageParam.classLoader),
+                "ignoreAllIncomingCalls", new XC_MethodHook() {
                     @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        super.beforeHookedMethod(param);
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        param.setResult(true);
+                        super.afterHookedMethod(param);
                     }
                 });
+
+
+        XposedBridge.hookAllMethods(XposedHelpers.findClass("com.android.phone.CallNotifier", loadPackageParam.classLoader),
+                "onNewRingingConnection", new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        try {
+                            Object objectField = XposedHelpers.getObjectField(param.args[0], "result");
+                            Object callMethod = XposedHelpers.callMethod(objectField, "getCall", new Object[0]);
+                            String str = (String) XposedHelpers.callMethod(objectField, "getAddress", new Object[0]);
+                            XposedHelpers.callStaticMethod(XposedHelpers.findClass("com.android.phone.PhoneUtils",
+                                    loadPackageParam.classLoader), "hangupRingingCall", new Object[]{callMethod});
+                            param.setResult(null);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                    }
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        super.afterHookedMethod(param);
+                    }
+                });
+
+
 
         XposedHelpers.findAndHookMethod("com.android.phone.CallController", loadPackageParam.classLoader, "placeCall", Intent.class,
                 new XC_MethodHook() {
@@ -783,7 +997,7 @@ public class Utils {
             XposedHelpers.findAndHookConstructor(Camera.class, int.class, new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    Log.e("WTKLV","FOUND CAMERA");
+
                     if (param.hasThrowable()) {
                         return;
                     }
@@ -818,7 +1032,7 @@ public class Utils {
     }
 
     public static void cameraAppHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
-        Log.e("WTKLV","CAMERA APP");
+
         XposedHelpers.findAndHookMethod("com.android.camera.CameraActivity", loadPackageParam.classLoader, "onCreate",
                 Bundle.class, new XC_MethodHook() {
                     @Override
@@ -896,5 +1110,17 @@ public class Utils {
         }else {
             return false;
         }
+    }
+
+    public static void usbStorageNotificationHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+
+        XposedHelpers.findAndHookMethod("com.android.systemui.usb.UsbStorageActivity", loadPackageParam.classLoader,
+                "onCreate", Bundle.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        ((Activity)param.thisObject).finish();
+                        super.beforeHookedMethod(param);
+                    }
+                });
     }
 }
