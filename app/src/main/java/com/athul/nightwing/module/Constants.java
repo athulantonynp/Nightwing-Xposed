@@ -1,5 +1,7 @@
 package com.athul.nightwing.module;
 
+import java.util.ArrayList;
+
 /**
  * Created by athul on 21/8/17.
  */
@@ -11,5 +13,7 @@ public class Constants {
     public static String downloadIdentifierKey="download_key";
     public static String sharedPreferenceName="shared_nightwing";
     public static String[] showOnlyApps={"me.entri.entrime","com.athul.nightwing",
-            "de.robv.android.xposed.installer","com.android.vending","com.android.settings"};
+            "de.robv.android.xposed.installer","com.android.vending","com.android.settings","com.google.android.gms"};
+
+
 }

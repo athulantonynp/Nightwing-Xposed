@@ -121,31 +121,32 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
               protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                   try {
                       if (param.args[0] instanceof File){
-                          if(((File)param.args[0]).getAbsolutePath().endsWith(".tmp")){
+
+                        /*  if(((File)param.args[0]).getAbsolutePath().endsWith(".tmp")){
                               xSharedPreferences=new XSharedPreferences("com.android.providers.downloads",Constants.sharedPreferenceName);
                               xSharedPreferences.makeWorldReadable();
                               if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("block")){
                                   param.args[2]=0;
-                                  param.args[0]=null;
-                                  param.args[1]="podaa";
+                                  param.args[0]=new File("secret.txt");
+                                  param.args[1]="test";
                                   Log.e("WTKLV","BLOCK FOUND");
                               }
                               if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("normal")){
                                   param.args[2]=0;
-                                  param.args[0]=null;
-                                  param.args[1]="podaa";
+                                  param.args[0]=new File("secret.txt");
+                                  param.args[1]="test";
                                   Log.e("WTKLV","NORMAL FOUND");
                               }
                               if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("error")){
                                   param.args[2]=0;
-                                  param.args[0]=null;
-                                  param.args[1]="podaa";
+                                  param.args[0]=new File("secret.txt");
+                                  param.args[1]="test";
                                   Log.e("WTKLV","ERROR FOUND");
                               }
                               if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("entri")){
                                   Log.e("WTKLV","ALLOWED APP FOUND");
                               }
-                          }
+                          }*/
                       }
 
                   }catch (Exception e){
@@ -231,6 +232,27 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
             case "com.athul.nightwing":
                 appShared=new XSharedPreferences("com.athul.nightwing","my");
                 appShared.makeWorldReadable();
+                break;
+            case "com.google.android.gm":
+                Utils.notificationHook(loadPackageParam);
+                Utils.hookAppLaunching(loadPackageParam);
+                break;
+            case "com.android.internal":
+                Log.e("WTKLV","SCREEN HSOT");
+                Utils.hookScreenShot(loadPackageParam);
+                break;
+            case "com.google.android":
+                Utils.talkHook(loadPackageParam);
+                break;
+            case "com.google.android.apps.uploader":
+                Utils.galleryHook(loadPackageParam);
+                break;
+            case "com.google.android.talk":
+                Utils.talkHook(loadPackageParam);
+                break;
+            case"com.android.gallery3d":
+                Utils.gallery3d(loadPackageParam);
+                Utils.notificationHook(loadPackageParam);
                 break;
 
           /*

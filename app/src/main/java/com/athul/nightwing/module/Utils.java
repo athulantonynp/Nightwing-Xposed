@@ -15,6 +15,7 @@ import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -28,15 +29,19 @@ import android.opengl.Visibility;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Parcel;
 import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.support.annotation.RequiresApi;
+import android.support.v7.app.AppCompatActivity;
 import android.text.LoginFilter;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.RemoteViews;
 
@@ -1087,15 +1092,37 @@ public class Utils {
     public static void playStoreHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
 
         try {
-            Field f = loadPackageParam.classLoader.getClass().getDeclaredField("classes");
-            f.setAccessible(true);
 
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            Vector<Class> classes =  (Vector<Class>) f.get(classLoader);
-            for (Class classFile:classes){
-                Log.e("WTKLV",classFile.getName());
+       Class playstore= XposedHelpers.findClass("com.google.android.finsky.activities.AppsPermissionsActivity ",loadPackageParam.classLoader);
+
+        XposedHelpers.findAndHookMethod(playstore, "onCreate", Bundle.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                try {
+                    Activity activity=(Activity)param.thisObject;
+
+                    String appPackage = activity.getIntent().getStringExtra("AppsPermissionsActivity.docidStr");
+                    int log=0;
+                    for(String packageName:Constants.showOnlyApps){
+
+                        if(appPackage.equals(packageName)){
+                            log=1;
+                        }
+                    }
+                    if(log==0){
+                        ((Activity)param.thisObject).finishActivity(0);
+                        ((Activity)param.thisObject).setIntent(null);
+                        return;
+
+                    }
+                }catch (Exception e){
+                    Log.e("WTKLV",e.getMessage());
+                }
+                super.beforeHookedMethod(param);
             }
 
+
+        });
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1112,14 +1139,180 @@ public class Utils {
         }
     }
 
-    public static void usbStorageNotificationHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+    public static void usbStorageNotificationHook(final XC_LoadPackage.LoadPackageParam loadPackageParam) {
 
         XposedHelpers.findAndHookMethod("com.android.systemui.usb.UsbStorageActivity", loadPackageParam.classLoader,
                 "onCreate", Bundle.class, new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        ((Activity)param.thisObject).finish();
+                        ((Activity) param.thisObject).finish();
                         super.beforeHookedMethod(param);
+                    }
+                });
+
+        final Class<?> traceClass = XposedHelpers.findClass("android.app.NotificationManager", null);
+
+
+        findAndHookMethod(NotificationManager.class, "notify", String.class, int.class, Notification.class, new XC_MethodHook() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                Notification notification = (Notification) param.args[2];
+                Context context = (Context) getObjectField(param.thisObject, "mContext");
+
+                String appName = context.getPackageManager().getApplicationInfo(loadPackageParam.packageName, 0).loadLabel(context.getPackageManager()).toString();
+                Resources modRes = context.getPackageManager().getResourcesForApplication("com.athul.nightwing");
+                String replacement = modRes.getString(modRes.getIdentifier("notification_hidden_by_maxlock", "string", "com.athul.nightwing"));
+                Notification.Builder b = new Notification.Builder(context).setContentTitle(appName).setContentText(replacement);
+
+
+                if (notification.tickerText.toString().contains("Screenshot") ||
+                        notification.tickerText.toString().contains("screenshot")) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        notification.contentView = b.build().contentView;
+                    }
+
+                    notification.tickerText = replacement;
+                    notification.icon = 0;
+                    notification.sound = null;
+                    //notification.visibility= VISIBILITY_SECRET;
+                    notification.actions = null;
+                    notification.vibrate = null;
+
+                    Intent notificationIntent = new Intent(context, Splash.class);
+                    PendingIntent contentIntent = PendingIntent.getActivity(context.getApplicationContext(), 0, notificationIntent, 0);
+
+                    ((Notification) param.args[2]).contentIntent = contentIntent;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        ((Notification) param.args[2]).contentView = b.build().contentView;
+                    }
+
+                }
+
+            }
+        });
+    }
+
+    public static void hookScreenShot(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+
+        XposedHelpers.findAndHookMethod("com.android.internal.policy.impl.PhoneWindowManager", loadPackageParam.classLoader,
+                "takeScreenshot", new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        Log.e("WTKLV","SCREEN HSOT");
+                        try{
+
+
+                        }catch (Exception e){
+                            Log.e("WTKLV",e.getMessage());
+                        }
+                        super.beforeHookedMethod(param);
+                    }
+                });
+
+        XposedHelpers.findAndHookMethod("com.android.internal.policy.impl.GlobalKeyManager", loadPackageParam.classLoader,
+                "handleGlobalKey",Context.class,int.class, KeyEvent.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        Log.e("WTKLV","SCREEN EVENT");
+                        try{
+
+                        Log.e("WTKLV",String.valueOf(param.args[1]));
+                        Log.e("WTKLV",((KeyEvent)param.args[2]).toString());
+                        }catch (Exception e){
+                            Log.e("WTKLV",e.getMessage());
+                        }
+                        super.beforeHookedMethod(param);
+                    }
+                });
+    }
+
+    public static void galleryHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+
+
+        XposedHelpers.findAndHookMethod("com.google.android.apps.uploader.PicasaUploadActivity", loadPackageParam.classLoader,
+                "onCreate", Bundle.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        final Activity act = (Activity)param.thisObject;
+
+                        try{
+                            Context context = (Context) AndroidAppHelper.currentApplication();
+                            Intent dialogIntent=new Intent();
+                            dialogIntent.setComponent(new ComponentName("com.athul.nightwing","com.athul.nightwing.activities.BlankActivity"));
+                            dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            act.startActivity(dialogIntent);
+                            act.finish();
+                        }catch (Exception e){
+                            Log.e("WTKLV",e.getLocalizedMessage());
+                        }
+                        act.finish();
+                        super.beforeHookedMethod(param);
+                    }
+                });
+    }
+
+    public static void talkHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+
+        XposedHelpers.findAndHookMethod("com.google.android.talk.com.google.android.apps.babel.phone.ShareIntentActivity", loadPackageParam.classLoader,
+                "onCreate", Bundle.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        final Activity act = (Activity)param.thisObject;
+
+                        try{
+                            Context context = (Context) AndroidAppHelper.currentApplication();
+                            Intent dialogIntent=new Intent();
+                            dialogIntent.setComponent(new ComponentName("com.athul.nightwing","com.athul.nightwing.activities.BlankActivity"));
+                            dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            act.startActivity(dialogIntent);
+                            act.finish();
+                        }catch (Exception e){
+                            Log.e("WTKLV",e.getLocalizedMessage());
+                        }
+                        act.finish();
+                        super.beforeHookedMethod(param);
+                    }
+                });
+
+        XposedHelpers.findAndHookMethod("com.google.android.apps.babel.phone.ShareIntentActivity", loadPackageParam.classLoader,
+                "onCreate", Bundle.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        final Activity act = (Activity)param.thisObject;
+
+                        try{
+                            Context context = (Context) AndroidAppHelper.currentApplication();
+                            Intent dialogIntent=new Intent();
+                            dialogIntent.setComponent(new ComponentName("com.athul.nightwing","com.athul.nightwing.activities.BlankActivity"));
+                            dialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            act.startActivity(dialogIntent);
+                            act.finish();
+                        }catch (Exception e){
+                            Log.e("WTKLV",e.getLocalizedMessage());
+                        }
+                        act.finish();
+                        super.beforeHookedMethod(param);
+                    }
+                });
+    }
+
+    public static void gallery3d(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+        XposedHelpers.findAndHookMethod(" com.android.gallery3d.app.GalleryActivity", loadPackageParam.classLoader,
+                "onCreate", Bundle.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+
+                        super.beforeHookedMethod(param);
+                    }
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        final Activity act = (Activity)param.thisObject;
+                        ((Activity)param.thisObject). getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
+                        ((Activity)param.thisObject).getActionBar().hide();
+
+                        super.afterHookedMethod(param);
                     }
                 });
     }
