@@ -15,5 +15,8 @@ public class Constants {
     public static String[] showOnlyApps={"me.entri.entrime","com.athul.nightwing",
             "de.robv.android.xposed.installer","com.android.vending","com.android.settings","com.google.android.gms"};
 
+    public static String[] AllowedAppToInstall={"me.entri.entrime","com.athul.nightwing",
+            "de.robv.android.xposed.installer","com.android.vending","com.android.settings","com.google.android.gms"};
+
 
 }

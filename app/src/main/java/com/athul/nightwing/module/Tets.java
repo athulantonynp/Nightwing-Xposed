@@ -70,11 +70,43 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
         XModuleResources modRes = XModuleResources.createInstance(MODULE_PATH, initPackageResourcesParam.res);
         Utils.changeDrawerIcon(initPackageResourcesParam,modRes);
 
+
     }
 
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam loadPackageParam) throws Throwable {
         //TODO
+        XSharedPreferences pref = new XSharedPreferences("me.entri.entrime", "tab_settings");
+        pref.makeWorldReadable();
+        String text = pref.getString("TAB_MODE", "");
+
+        if(text.isEmpty()||text==null){
+            lockAll(loadPackageParam);
+        }else {
+            try {
+                if(text.equals("MEENTRIENTRIME_UNLOCK_TABLET_FULL")){
+                    //TODO Nothing
+
+                }
+                if(text.equals("MEENTRIENTRIME_LOCK_TABLET_LOCK")||
+                        text.equals("MEENTRIENTRIME_UNLOCK_TABLET_PARTIAL")){
+
+                    lockAll(loadPackageParam);
+                }
+            }catch (Exception e){
+
+                lockAll(loadPackageParam);
+
+            }
+        }
+
+
+
+
+
+    }
+
+    private void lockAll(XC_LoadPackage.LoadPackageParam loadPackageParam) {
         if(loadPackageParam.packageName.equals("android")&&loadPackageParam.processName.equals("android")){
             final Class<?> packageParserClass = XposedHelpers.findClass(
                     "android.content.pm.PackageParser", loadPackageParam.classLoader);
@@ -116,51 +148,50 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                         }
                     }); */
 
-          XposedBridge.hookAllMethods(packageParserClass, "parsePackage", new XC_MethodHook() {
-              @Override
-              protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                  try {
-                      if (param.args[0] instanceof File){
+            XposedBridge.hookAllMethods(packageParserClass, "parsePackage", new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    try {
+                        if (param.args[0] instanceof File){
 
-                        /*  if(((File)param.args[0]).getAbsolutePath().endsWith(".tmp")){
+                          if(((File)param.args[0]).getAbsolutePath().endsWith(".tmp")){
                               xSharedPreferences=new XSharedPreferences("com.android.providers.downloads",Constants.sharedPreferenceName);
                               xSharedPreferences.makeWorldReadable();
                               if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("block")){
                                   param.args[2]=0;
                                   param.args[0]=new File("secret.txt");
                                   param.args[1]="test";
-                                  Log.e("WTKLV","BLOCK FOUND");
+
                               }
                               if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("normal")){
                                   param.args[2]=0;
                                   param.args[0]=new File("secret.txt");
                                   param.args[1]="test";
-                                  Log.e("WTKLV","NORMAL FOUND");
+
                               }
                               if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("error")){
                                   param.args[2]=0;
                                   param.args[0]=new File("secret.txt");
                                   param.args[1]="test";
-                                  Log.e("WTKLV","ERROR FOUND");
                               }
                               if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("entri")){
-                                  Log.e("WTKLV","ALLOWED APP FOUND");
+
                               }
-                          }*/
-                      }
+                          }
+                        }
 
-                  }catch (Exception e){
-                      Log.e("WTKLV",e.getMessage());
-                  }
+                    }catch (Exception e){
+                        Log.e("WTKLV",e.getMessage());
+                    }
 
-                  super.beforeHookedMethod(param);
-              }
+                    super.beforeHookedMethod(param);
+                }
 
-              @Override
-              protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                  super.afterHookedMethod(param);
-              }
-          });
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    super.afterHookedMethod(param);
+                }
+            });
 
         }
 
@@ -170,6 +201,7 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
             case "com.android.launcher3":
                 Utils.gsbHook(loadPackageParam);
                 Utils.launcherHook(loadPackageParam);
+                Utils.widgetHook(loadPackageParam);
                 break;
             case "com.android.settings":
                 Utils.removeFieldsFromSettings(loadPackageParam,loadPackageParam.classLoader);
@@ -184,14 +216,12 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 break;
 
             case "com.google.android.youtube":
-                Utils.hookAppLaunching(loadPackageParam);
+                Utils.hookYoutubeLaunching(loadPackageParam);
                 break;
 
-           case "android":
-               Utils.USBMenuHook(loadPackageParam);
+            case "android":
+                Utils.USBMenuHook(loadPackageParam);
                 break;
-
-
 
             case "com.android.dialer":
                 Utils.phoneHook(loadPackageParam);
@@ -214,7 +244,7 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 Utils.cameraAppHook(loadPackageParam);
                 break;
             case "com.android.systemui":
-               // Utils.recentsHook(loadPackageParam);
+                // Utils.recentsHook(loadPackageParam);
                 Utils.usbStorageNotificationHook(loadPackageParam);
                 break;
             case "com.android.vending":
@@ -238,7 +268,6 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 Utils.hookAppLaunching(loadPackageParam);
                 break;
             case "com.android.internal":
-                Log.e("WTKLV","SCREEN HSOT");
                 Utils.hookScreenShot(loadPackageParam);
                 break;
             case "com.google.android":
@@ -254,7 +283,24 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 Utils.gallery3d(loadPackageParam);
                 Utils.notificationHook(loadPackageParam);
                 break;
-
+            case "com.opera.branding":
+                Utils.notificationHook(loadPackageParam);
+                break;
+            case "kingoroot.supersu":
+                Utils.notificationHook(loadPackageParam);
+                break;
+            case "com.myntra.android":
+                Utils.notificationHook(loadPackageParam);
+            case "com.opera.mini.android":
+                Utils.notificationHook(loadPackageParam);
+                break;
+            case "com.google.android.street":
+                Utils.notificationHook(loadPackageParam);
+                Utils.hookAppLaunching(loadPackageParam);
+                break;
+            case "com.google.android.googlequicksearchbox":
+                Utils.notificationHook(loadPackageParam);
+                break;
           /*
                 case "com.athul.nightwing":
                 Utils.notificationHook(loadPackageParam);
@@ -262,8 +308,9 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
 
            */
 
-        }
 
+
+        }
 
     }
 

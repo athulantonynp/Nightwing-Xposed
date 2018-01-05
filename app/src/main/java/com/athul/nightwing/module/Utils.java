@@ -131,12 +131,22 @@ public class Utils {
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
 
                             List<Object> objects=new ArrayList<>();
+                            XSharedPreferences pref = new XSharedPreferences("me.entri.entrime", "tab_settings");
+                            pref.makeWorldReadable();
+                            String text = pref.getString("TAB_MODE", "");
                             for (int i=0;i<((List)param.args[0]).size();i++){
 
                                 String call=new Gson().toJson(((List)param.args[0]).get(i));
+                                Log.e("WTKLV",call);
                                 if(call.contains("WifiSettings")||call.contains("AudioProfileSettings")
                                         ||call.contains("DisplaySettings")||call.contains("LocationSettings")){
                                     objects.add(((List)param.args[0]).get(i));
+                                }
+                                if(call.contains("PrivacySettings")){
+
+                                    if(text.equals("MEENTRIENTRIME_UNLOCK_TABLET_PARTIAL")){
+                                        objects.add(((List)param.args[0]).get(i));
+                                    }
                                 }
 
                             }
@@ -364,20 +374,49 @@ public class Utils {
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 String urlNew = param.args[0].toString();
 
-               if (urlNew.toString().contains("Entri") ||
-                        urlNew.toString().contains("Playstore") ||
-                        urlNew.toString().contains("Playservices") ||
-                        urlNew.toString().contains("Play Services")) {
+                boolean allow=false;
+               try{
+                   XSharedPreferences pref = new XSharedPreferences("me.entri.entrime", "tab_settings");
+                   pref.makeWorldReadable();
+                    String remoteAllow= pref.getString("TAB_ALLOWED_APP", "Entri");
 
+                   String[] allowedPackages =remoteAllow.split(",");
+                   if(allowedPackages!=null){
+                       if(allowedPackages.length>0) {
+                           for (String packages : allowedPackages) {
+                               if (urlNew.contains(packages)) {
+                                   allow = true;
+                               }
+                           }
+                       }}else {
+                       allow=false;
+                   }
+               }catch (Exception e){
+
+               }
+
+
+
+                if(allow){
                     packageDownloadHook("entri");
-                } else {
+                }else {
+                    if (urlNew.toString().contains("Entri") ||
+                            urlNew.toString().contains("Playstore") ||
+                            urlNew.toString().contains("Playservices") ||
+                            urlNew.toString().contains("Play Services")) {
+
+                        packageDownloadHook("entri");
+                    } else {
                     /*Application app=AndroidAppHelper.currentApplication();
                     Intent intent = new Intent(Intent.ACTION_MAIN);
                     intent.addCategory(Intent.CATEGORY_HOME);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     app.startActivity(intent);*/
-                    packageDownloadHook("block");
+                        packageDownloadHook("block");
+                    }
+
                 }
+
 
                 super.beforeHookedMethod(param);
             }
@@ -560,10 +599,6 @@ public class Utils {
 
             switch (packageName) {
                 case "me.entri.entrime":
-                    break;
-                case "com.athul.nightwing":
-                    break;
-                case "de.robv.android.xposed.installer":
                     break;
                 case "com.android.vending":
                     break;
@@ -796,42 +831,46 @@ public class Utils {
     public static void notificationHook(final XC_LoadPackage.LoadPackageParam loadPackageParam) {
         final Class<?> traceClass = XposedHelpers.findClass("android.app.NotificationManager", null);
 
+        try{
+            findAndHookMethod(NotificationManager.class, "notify", String.class, int.class, Notification.class, new XC_MethodHook() {
+                @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    Notification notification = (Notification) param.args[2];
+                    Context context = (Context) getObjectField(param.thisObject, "mContext");
 
-        findAndHookMethod(NotificationManager.class, "notify", String.class, int.class, Notification.class, new XC_MethodHook() {
-            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                Notification notification = (Notification) param.args[2];
-                Context context = (Context) getObjectField(param.thisObject, "mContext");
+                    String appName = context.getPackageManager().getApplicationInfo(loadPackageParam.packageName, 0).loadLabel(context.getPackageManager()).toString();
+                    Resources modRes = context.getPackageManager().getResourcesForApplication("com.athul.nightwing");
+                    String replacement = modRes.getString(modRes.getIdentifier("notification_hidden_by_maxlock", "string", "com.athul.nightwing"));
+                    Notification.Builder b = new Notification.Builder(context).setContentTitle(appName).setContentText(replacement);
 
-                String appName = context.getPackageManager().getApplicationInfo(loadPackageParam.packageName, 0).loadLabel(context.getPackageManager()).toString();
-                Resources modRes = context.getPackageManager().getResourcesForApplication("com.athul.nightwing");
-                String replacement = modRes.getString(modRes.getIdentifier("notification_hidden_by_maxlock", "string", "com.athul.nightwing"));
-                Notification.Builder b = new Notification.Builder(context).setContentTitle(appName).setContentText(replacement);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        notification.contentView = b.build().contentView;
+                    }
 
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    notification.contentView = b.build().contentView;
+
+                    notification.tickerText = replacement;
+                    notification.icon=0;
+                    notification.sound=null;
+                    //notification.visibility= VISIBILITY_SECRET;
+                    notification.actions=null;
+                    notification.vibrate=null;
+
+                    Intent notificationIntent = new Intent(context, Splash.class);
+                    PendingIntent contentIntent = PendingIntent.getActivity(context.getApplicationContext(), 0, notificationIntent, 0);
+
+                    ((Notification)param.args[2]).contentIntent=contentIntent;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        ((Notification)param.args[2]).contentView=b.build().contentView;
+                    }
+
                 }
 
+            });
 
-                notification.tickerText = replacement;
-                notification.icon=0;
-                notification.sound=null;
-                //notification.visibility= VISIBILITY_SECRET;
-                notification.actions=null;
-                notification.vibrate=null;
-
-                Intent notificationIntent = new Intent(context, Splash.class);
-                PendingIntent contentIntent = PendingIntent.getActivity(context.getApplicationContext(), 0, notificationIntent, 0);
-
-                ((Notification)param.args[2]).contentIntent=contentIntent;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    ((Notification)param.args[2]).contentView=b.build().contentView;
-                }
-
-            }
-
-        });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
 
 
         /*try{
@@ -1077,17 +1116,43 @@ public class Utils {
 
     public static void hookAppLaunching(XC_LoadPackage.LoadPackageParam loadPackageParam) {
 
+       try{
+           findAndHookMethod(Activity.class, "onStart", new XC_MethodHook() {
+               @Override
+               protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                   final Activity activity = (Activity) param.thisObject;
+                   String activityName = activity.getClass().getName();
+
+                   activity.finish();
+
+               }
+           });
+       }catch (Exception e){
+           e.printStackTrace();
+       }
+    }
+
+    public static void hookYoutubeLaunching(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+
         findAndHookMethod(Activity.class, "onStart", new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 final Activity activity = (Activity) param.thisObject;
                 String activityName = activity.getClass().getName();
-                Log.e("WTKLV","LOCKED PACKAGE ACCESS "+activityName);
-                activity.finish();
+
+               try{
+                   if(activityName.contains("WatchWhileActivity")||!activity.getIntent().toUri(0).contains("me.entri.entrime")){
+                       activity.finish();
+                   }
+               }catch (Exception e){
+                   e.printStackTrace();
+               }
+
 
             }
         });
     }
+
 
     public static void playStoreHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
 
@@ -1103,7 +1168,7 @@ public class Utils {
 
                     String appPackage = activity.getIntent().getStringExtra("AppsPermissionsActivity.docidStr");
                     int log=0;
-                    for(String packageName:Constants.showOnlyApps){
+                    for(String packageName:Constants.AllowedAppToInstall){
 
                         if(appPackage.equals(packageName)){
                             log=1;
@@ -1116,7 +1181,7 @@ public class Utils {
 
                     }
                 }catch (Exception e){
-                    Log.e("WTKLV",e.getMessage());
+
                 }
                 super.beforeHookedMethod(param);
             }
@@ -1315,5 +1380,25 @@ public class Utils {
                         super.afterHookedMethod(param);
                     }
                 });
+    }
+
+    public static void widgetHook(XC_LoadPackage.LoadPackageParam loadPackageParam) {
+
+        XposedHelpers.findAndHookMethod("com.android.launcher3.Launcher", loadPackageParam.classLoader,
+                "isDraggingEnabled", new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        super.beforeHookedMethod(param);
+                    }
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        param.setResult(false);
+                        super.afterHookedMethod(param);
+
+                    }
+                });
+
+
     }
 }
