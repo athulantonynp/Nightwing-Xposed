@@ -373,37 +373,13 @@ public class Utils {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 String urlNew = param.args[0].toString();
+                try {
 
-                boolean allow=false;
-               try{
-                   XSharedPreferences pref = new XSharedPreferences("me.entri.entrime", "tab_settings");
-                   pref.makeWorldReadable();
-                    String remoteAllow= pref.getString("TAB_ALLOWED_APP", "Entri");
-
-                   String[] allowedPackages =remoteAllow.split(",");
-                   if(allowedPackages!=null){
-                       if(allowedPackages.length>0) {
-                           for (String packages : allowedPackages) {
-                               if (urlNew.contains(packages)) {
-                                   allow = true;
-                               }
-                           }
-                       }}else {
-                       allow=false;
-                   }
-               }catch (Exception e){
-
-               }
-
-
-
-                if(allow){
-                    packageDownloadHook("entri");
-                }else {
                     if (urlNew.toString().contains("Entri") ||
                             urlNew.toString().contains("Playstore") ||
                             urlNew.toString().contains("Playservices") ||
-                            urlNew.toString().contains("Play Services")) {
+                            urlNew.toString().contains("Play Services")||
+                            urlNew.toString().contains("Google")) {
 
                         packageDownloadHook("entri");
                     } else {
@@ -415,10 +391,11 @@ public class Utils {
                         packageDownloadHook("block");
                     }
 
+
+                    super.beforeHookedMethod(param);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-
-
-                super.beforeHookedMethod(param);
             }
 
 
@@ -1401,4 +1378,6 @@ public class Utils {
 
 
     }
+
+
 }

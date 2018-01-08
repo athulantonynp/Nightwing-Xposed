@@ -86,7 +86,6 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
             try {
                 if(text.equals("MEENTRIENTRIME_UNLOCK_TABLET_FULL")){
                     //TODO Nothing
-
                 }
                 if(text.equals("MEENTRIENTRIME_LOCK_TABLET_LOCK")||
                         text.equals("MEENTRIENTRIME_UNLOCK_TABLET_PARTIAL")){
@@ -154,31 +153,37 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                     try {
                         if (param.args[0] instanceof File){
 
-                          if(((File)param.args[0]).getAbsolutePath().endsWith(".tmp")){
+                         if(((File)param.args[0]).getAbsolutePath().endsWith(".tmp")){
                               xSharedPreferences=new XSharedPreferences("com.android.providers.downloads",Constants.sharedPreferenceName);
                               xSharedPreferences.makeWorldReadable();
                               if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("block")){
-                                  param.args[2]=0;
-                                  param.args[0]=new File("secret.txt");
-                                  param.args[1]="test";
+                                  Log.e("WTKLV","BLOCK");
+                                    try{
+                                        param.args[3]=0;
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
 
                               }
                               if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("normal")){
-                                  param.args[2]=0;
-                                  param.args[0]=new File("secret.txt");
-                                  param.args[1]="test";
+                                  Log.e("WTKLV","NORMAL");
+                                  try{
+                                      param.args[3]=0;
+                                  }catch (Exception e){
+                                      e.printStackTrace();
+                                  }
 
                               }
                               if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("error")){
-                                  param.args[2]=0;
-                                  param.args[0]=new File("secret.txt");
-                                  param.args[1]="test";
+                                  Log.e("WTKLV","ERROR");
+
                               }
                               if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("entri")){
 
                               }
                           }
                         }
+
 
                     }catch (Exception e){
                         Log.e("WTKLV",e.getMessage());
