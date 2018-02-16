@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.SET_WALLPAPER"/>
 
     <application
         android:allowBackup="true"
@@ -42,6 +43,13 @@
             <intent-filter>
                 <data android:scheme="package" />
                 <action android:name="android.intent.action.PACKAGE_ADDED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name="com.athul.nightwing.recievers.WallpaperReciever">
+            <intent-filter>
+                <data android:scheme="package" />
+                <action android:name="change.wallpaper.for.tablet" />
             </intent-filter>
         </receiver>
     </application>
