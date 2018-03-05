@@ -8,12 +8,7 @@
     <Button
         android:layout_width="match_parent"
         android:id="@+id/btn"
-        android:text="Click"
+        android:text="Change Wallpaper"
         android:layout_height="wrap_content" />
-    <Button
-        android:layout_width="match_parent"
-        android:id="@+id/btn2"
-        android:layout_below="@+id/btn"
-        android:text="Click"
-        android:layout_height="wrap_content" />
+
 </RelativeLayout>

@@ -1,35 +1,14 @@
 package com.athul.nightwing.module;
 
-import android.app.AndroidAppHelper;
-import android.app.DownloadManager;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.res.Resources;
 import android.content.res.XModuleResources;
 import android.content.res.XResources;
-import android.support.annotation.Nullable;
 import android.util.Log;
-import android.util.Pair;
-
-import com.google.gson.Gson;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Map;
 import java.util.Scanner;
-import java.util.Set;
 
-import dalvik.system.DexFile;
 import de.robv.android.xposed.IXposedHookInitPackageResources;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
@@ -159,7 +138,6 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                               if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("block")){
                                   Log.e("WTKLV","BLOCK");
                                     try{
-                                        param.args[3]=0;
                                     }catch (Exception e){
                                         e.printStackTrace();
                                     }
@@ -168,7 +146,6 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                               if(xSharedPreferences.getString(Constants.downloadIdentifierKey,"error").contains("normal")){
                                   Log.e("WTKLV","NORMAL");
                                   try{
-                                      param.args[3]=0;
                                   }catch (Exception e){
                                       e.printStackTrace();
                                   }
@@ -304,6 +281,9 @@ public class Tets implements IXposedHookZygoteInit,IXposedHookInitPackageResourc
                 Utils.hookAppLaunching(loadPackageParam);
                 break;
             case "com.google.android.googlequicksearchbox":
+                Utils.notificationHook(loadPackageParam);
+                break;
+            case "com.google.android.gms":
                 Utils.notificationHook(loadPackageParam);
                 break;
           /*

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,24 +19,27 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import com.athul.nightwing.R;
 import com.athul.nightwing.module.Constants;
+import com.athul.nightwing.recievers.WallpaperReciever;
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 import com.github.chrisbanes.photoview.PhotoView;
 
 import java.io.File;
 import java.util.List;
+import java.util.logging.Logger;
 
 import de.robv.android.xposed.XSharedPreferences;
 
 public class Splash extends AppCompatActivity {
 
-    Button btn,btn2;
+    Button btn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,11 +52,11 @@ public class Splash extends AppCompatActivity {
                 getLauncherName();
             }
         });
-        btn2=(Button)findViewById(R.id.btn2);
-        btn2.setOnClickListener(new View.OnClickListener() {
+
+        btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                clear();
+                Splash.this.sendBroadcast(new Intent(Splash.this, WallpaperReciever.class));
             }
         });
     }
